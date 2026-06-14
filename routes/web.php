@@ -7,6 +7,8 @@ use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\MatchingController;
 use App\Http\Controllers\PerusahaanController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\RecruiterController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,7 +40,37 @@ Route::get('/perusahaan/{id}/overview', [PerusahaanController::class, 'getOvervi
 Route::get('/perusahaan/{id}/reviews', [PerusahaanController::class, 'getReviews']);
 Route::get('/perusahaan/{id}/lamaran', [PerusahaanController::class, 'getLamaran']);
 Route::get('/perusahaan/{id}/connections', [PerusahaanController::class, 'getConnections']);
+Route::post('/perusahaan/apply', [PerusahaanController::class, 'applyJob'])->name('perusahaan.apply');
+Route::post('/perusahaan/review', [PerusahaanController::class, 'storeReview'])->name('perusahaan.review');
 
 // Forgot Password
 Route::post('/forgot-password/check-email', [AuthController::class, 'checkEmail']);
 Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword']);
+
+// ─── Admin Routes ───────────────────────────────────────────────────
+Route::prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/jobs',      [AdminController::class, 'jobs'])->name('admin.jobs');
+    Route::delete('/jobs/{id}', [AdminController::class, 'deleteJob'])->name('admin.jobs.delete');
+    Route::get('/users',     [AdminController::class, 'users'])->name('admin.users');
+    Route::get('/recruiter/{id}', [AdminController::class, 'recruiterDetail'])->name('admin.recruiter.detail');
+    Route::post('/users/{id}/verify', [AdminController::class, 'verifyRecruiter'])->name('admin.users.verify');
+    Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+    Route::get('/skills',    [AdminController::class, 'skills'])->name('admin.skills');
+    Route::post('/skills',   [AdminController::class, 'addSkill'])->name('admin.skills.add');
+    Route::delete('/skills/{id}', [AdminController::class, 'deleteSkill'])->name('admin.skills.delete');
+});
+
+// ─── Recruiter Routes ──────────────────────────────────────────────
+Route::prefix('recruiter')->group(function () {
+    Route::get('/dashboard', [RecruiterController::class, 'dashboard'])->name('recruiter.dashboard');
+    Route::get('/jobs',      [RecruiterController::class, 'jobs'])->name('recruiter.jobs');
+    Route::post('/jobs',     [RecruiterController::class, 'storeJob'])->name('recruiter.jobs.store');
+    Route::put('/jobs/{id}', [RecruiterController::class, 'updateJob'])->name('recruiter.jobs.update');
+    Route::delete('/jobs/{id}', [RecruiterController::class, 'deleteJob'])->name('recruiter.jobs.delete');
+    Route::get('/jobs/{id}/data', [RecruiterController::class, 'getJobData'])->name('recruiter.jobs.data');
+    Route::get('/lamaran',  [RecruiterController::class, 'lamaran'])->name('recruiter.lamaran');
+    Route::put('/lamaran/{id}/status', [RecruiterController::class, 'updateStatus'])->name('recruiter.lamaran.status');
+    Route::get('/profil',   [RecruiterController::class, 'profil'])->name('recruiter.profil');
+    Route::post('/profil',  [RecruiterController::class, 'updateProfil'])->name('recruiter.profil.update');
+});

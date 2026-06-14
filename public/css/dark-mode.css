@@ -117,3 +117,89 @@ html[data-theme="dark"] .skeleton {
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
 }
+
+/* ══════════════════════════════════════════
+   ADMIN PANEL — Dark Mode Overrides
+══════════════════════════════════════════ */
+html[data-theme="dark"] {
+    --primary:       #2DD4BF;
+    --primary-hover: #14B8A6;
+    --primary-light: #134E4A;
+    --primary-mid:   #5EEAD4;
+    --green-bg:      #064E3B;
+    --red-bg:        #450A0A;
+    --orange-bg:     #431407;
+    --yellow-bg:     #422006;
+}
+
+html[data-theme="dark"] .admin-footer {
+    background: var(--white);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .sidebar nav a.active {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+html[data-theme="dark"] .btn-delete {
+    background: #450A0A;
+    color: #FCA5A5;
+}
+html[data-theme="dark"] .btn-delete:hover {
+    background: #DC2626;
+    color: #fff;
+}
+
+html[data-theme="dark"] .btn-verify {
+    background: #064E3B;
+    color: #6EE7B7;
+}
+html[data-theme="dark"] .btn-verify:hover {
+    background: #059669;
+    color: #fff;
+}
+
+/* ══════════════════════════════════════════
+   RECRUITER PANEL — Dark Mode Overrides
+══════════════════════════════════════════ */
+html[data-theme="dark"] body.recruiter-page {
+    --primary:       #818CF8;
+    --primary-hover: #6366F1;
+    --primary-light: #312E81;
+    --primary-mid:   #A5B4FC;
+    --red-bg:        #450A0A;
+    --green-bg:      #064E3B;
+    --yellow-bg:     #422006;
+    --orange-bg:     #431407;
+}
+
+html[data-theme="dark"] body.recruiter-page .sidebar nav a.active {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+html[data-theme="dark"] body.recruiter-page .btn-edit {
+    background: #312E81;
+    color: #A5B4FC;
+}
+html[data-theme="dark"] body.recruiter-page .btn-edit:hover {
+    background: #6366F1;
+    color: #fff;
+}
+
+html[data-theme="dark"] body.recruiter-page .status-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+html[data-theme="dark"] body.recruiter-page .tipe-badge {
+    background: #312E81;
+    color: #A5B4FC;
+}
+
+html[data-theme="dark"] body.recruiter-page .recruiter-footer {
+    background: var(--white);
+    border-color: var(--border);
+}

@@ -46,8 +46,8 @@ class AuthController extends Controller
         ]);
 
         return match($user->role) {
-            'admin'     => redirect('/admin/jobs'),
-            'recruiter' => redirect('/recruiter/jobs'),
+            'admin'     => redirect('/admin/dashboard'),
+            'recruiter' => redirect('/recruiter/dashboard'),
             default     => redirect('/home'),
         };
     }

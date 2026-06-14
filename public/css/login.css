@@ -118,6 +118,24 @@ input[type="password"]:focus {
 }
 input::placeholder { color: var(--text-3); }
 
+/* ── Password toggle ── */
+.input-wrap { position: relative; }
+.input-wrap input { padding-right: 40px; }
+.toggle-pass {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 2px 4px;
+  color: var(--text-3);
+  opacity: .6;
+  transition: opacity var(--transition);
+}
+.toggle-pass:hover { opacity: 1; }
+
 .error-msg {
   font-size: 13px;
   color: #CC1016;
@@ -219,4 +237,4 @@ footer {
   button[type="submit"] { font-size: 14.5px; padding: 11px; }
 }
 
-
+

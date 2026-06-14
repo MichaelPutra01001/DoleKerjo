@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class PerusahaanController extends Controller
 {
@@ -59,7 +60,12 @@ class PerusahaanController extends Controller
     {
         if (!session('user_id')) return response()->json(['error' => 'Unauthenticated'], 401);
 
-        $p = DB::selectOne("SELECT * FROM perusahaan WHERE id = ?", [$id]);
+        $p = DB::selectOne("
+            SELECT p.*, u.nama AS recruiter_nama
+            FROM perusahaan p
+            LEFT JOIN users u ON u.id = p.recruiter_id
+            WHERE p.id = ?
+        ", [$id]);
         if (!$p) return response()->json(['error' => 'Not found'], 404);
 
         // Statistik review
@@ -139,22 +145,92 @@ class PerusahaanController extends Controller
                 ORDER BY j.created_at DESC
             ", [$p->nama, $userId]);
         } else {
-            // User / Admin: lihat semua job + jumlah lamaran
+            // User: lihat semua job + cek apakah user sudah melamar
             $jobs = DB::select("
                 SELECT j.*,
-                    COUNT(l.id) AS total_lamaran
+                    COUNT(l_all.id) AS total_lamaran,
+                    MAX(CASE WHEN l_user.id IS NOT NULL THEN 1 ELSE 0 END) AS sudah_lamar
                 FROM jobs j
-                LEFT JOIN lamaran l ON l.job_id = j.id
+                LEFT JOIN lamaran l_all ON l_all.job_id = j.id
+                LEFT JOIN lamaran l_user ON l_user.job_id = j.id AND l_user.user_id = ?
                 WHERE j.nama_perusahaan = ?
                 GROUP BY j.id
                 ORDER BY j.created_at DESC
-            ", [$p->nama]);
+            ", [$userId, $p->nama]);
         }
 
         return response()->json([
-            'jobs'       => $jobs,
-            'role'       => $role,
+            'jobs'         => $jobs,
+            'role'         => $role,
             'recruiter_id' => $p->recruiter_id,
+            'user_id'      => $userId,
+        ]);
+    }
+
+    // ─── User: Lamar pekerjaan ─────────────────────────────────────────────────
+    public function applyJob(Request $request)
+    {
+        if (!session('user_id')) return response()->json(['error' => 'Unauthenticated'], 401);
+        if (session('role') !== 'user') return response()->json(['error' => 'Hanya user yang bisa melamar'], 403);
+
+        $jobId  = $request->input('job_id');
+        $userId = session('user_id');
+
+        // Cek apakah job ada
+        $job = DB::selectOne("SELECT * FROM jobs WHERE id = ?", [$jobId]);
+        if (!$job) return response()->json(['error' => 'Lowongan tidak ditemukan'], 404);
+
+        // Cek apakah sudah pernah melamar
+        $existing = DB::selectOne("SELECT id FROM lamaran WHERE user_id = ? AND job_id = ?", [$userId, $jobId]);
+        if ($existing) return response()->json(['error' => 'Anda sudah melamar pekerjaan ini'], 400);
+
+        DB::insert("INSERT INTO lamaran (user_id, job_id, status) VALUES (?, ?, 'pending')", [$userId, $jobId]);
+
+        return response()->json(['success' => true, 'message' => 'Lamaran berhasil dikirim!']);
+    }
+
+    // ─── User: Simpan review + rating ───────────────────────────────────────────
+    public function storeReview(Request $request)
+    {
+        if (!session('user_id')) return response()->json(['error' => 'Unauthenticated'], 401);
+
+        $userId   = session('user_id');
+        $namaPrsh = $request->input('nama_perusahaan');
+        $rating   = (int) $request->input('rating');
+        $posisi   = $request->input('posisi_user') ?: null;
+        $isi      = $request->input('isi_review');
+
+        // Validasi
+        if (!$namaPrsh)  return response()->json(['error' => 'Nama perusahaan kosong'], 400);
+        if ($rating < 1 || $rating > 5) return response()->json(['error' => 'Rating harus 1-5'], 400);
+        if (!$isi || strlen(trim($isi)) < 3) return response()->json(['error' => 'Review minimal 3 karakter'], 400);
+
+        // Cek apakah user sudah pernah review perusahaan ini
+        $existing = DB::selectOne("SELECT id FROM reviews WHERE user_id = ? AND nama_perusahaan = ?", [$userId, $namaPrsh]);
+        if ($existing) {
+            // Update review lama
+            DB::update("
+                UPDATE reviews SET rating = ?, posisi_user = ?, isi_review = ?
+                WHERE id = ?
+            ", [$rating, $posisi, $isi, $existing->id]);
+        } else {
+            DB::insert("
+                INSERT INTO reviews (user_id, nama_perusahaan, posisi_user, isi_review, rating)
+                VALUES (?, ?, ?, ?, ?)
+            ", [$userId, $namaPrsh, $posisi, $isi, $rating]);
+        }
+
+        // Return avg rating terbaru
+        $stats = DB::selectOne("
+            SELECT COUNT(*) AS total, ROUND(AVG(rating),1) AS avg_rating
+            FROM reviews WHERE nama_perusahaan = ?
+        ", [$namaPrsh]);
+
+        return response()->json([
+            'success'    => true,
+            'message'    => $existing ? 'Review berhasil diperbarui!' : 'Review berhasil ditambahkan!',
+            'avg_rating' => $stats->avg_rating,
+            'total'      => $stats->total,
         ]);
     }
 

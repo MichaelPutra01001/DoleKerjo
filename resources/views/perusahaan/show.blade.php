@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Detail perusahaan {{ $perusahaan->nama }} — review, lowongan, dan informasi lengkap di GradMatch.">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $perusahaan->nama }} — GradMatch</title>
     <link rel="stylesheet" href="{{ asset('css/perusahaan.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
@@ -167,7 +168,10 @@
 
 <!-- Pass data ke JS -->
 <script>
-    window.PERUSAHAAN_ID = {{ $perusahaan->id }};
+    window.PERUSAHAAN_ID   = {{ $perusahaan->id }};
+    window.PERUSAHAAN_NAMA = @json($perusahaan->nama);
+    window.USER_ROLE       = @json($role);
+    window.USER_ID         = {{ $user_id ?? 'null' }};
 </script>
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/perusahaan.js') }}"></script>

@@ -1,8 +1,18 @@
 /* ============================================================
-   perusahaan.js — GradMatch Company Pages
+   perusahaan.js - GradMatch Company Pages
    ============================================================ */
 
-// ── Helper: format rupiah ──────────────────────────────────
+const PERUSAHAAN_ID   = window.PERUSAHAAN_ID   || null;
+const PERUSAHAAN_NAMA = window.PERUSAHAAN_NAMA || '';
+const USER_ROLE       = window.USER_ROLE       || 'user';
+const USER_ID         = window.USER_ID         || null;
+
+// CSRF token helper
+function csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+}
+
+// Format rupiah
 function formatRupiah(n) {
     if (!n) return '-';
     if (n >= 1_000_000) return 'Rp ' + (n / 1_000_000).toFixed(0) + ' Jt';
@@ -10,23 +20,23 @@ function formatRupiah(n) {
     return 'Rp ' + n;
 }
 
-// ── Helper: render bintang ─────────────────────────────────
+// Render bintang
 function renderStars(rating) {
     let html = '<span class="stars">';
     for (let i = 1; i <= 5; i++) {
         if (rating >= i) {
-            html += '<span class="star filled">★</span>';
+            html += '<span class="star filled">&#9733;</span>';
         } else if (rating >= i - 0.5) {
-            html += '<span class="star half">★</span>';
+            html += '<span class="star half">&#9733;</span>';
         } else {
-            html += '<span class="star">★</span>';
+            html += '<span class="star">&#9733;</span>';
         }
     }
     html += '</span>';
     return html;
 }
 
-// ── Helper: inisial nama ───────────────────────────────────
+// Inisial nama
 function initials(name) {
     if (!name) return '?';
     const parts = name.trim().split(' ');
@@ -34,14 +44,14 @@ function initials(name) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-// ── Helper: format tanggal ─────────────────────────────────
+// Format tanggal
 function formatDate(str) {
     if (!str) return '-';
     const d = new Date(str);
     return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-// ── Helper: skeleton ───────────────────────────────────────
+// Skeleton loader
 function skeletonHTML(rows = 3) {
     let h = '<div class="skeleton-wrap">';
     for (let i = 0; i < rows; i++) {
@@ -53,11 +63,10 @@ function skeletonHTML(rows = 3) {
 }
 
 /* ============================================================
-   INDEX PAGE — Search & Reveal
+   INDEX PAGE - Search & Reveal
    ============================================================ */
 
 if (document.getElementById('companyGrid')) {
-    // Live search
     const searchInput = document.getElementById('searchInput');
     const cards = document.querySelectorAll('.company-card');
 
@@ -77,7 +86,6 @@ if (document.getElementById('companyGrid')) {
         });
     }
 
-    // Reveal on scroll
     const observer = new IntersectionObserver(entries => {
         entries.forEach(e => {
             if (e.isIntersecting) {
@@ -91,31 +99,27 @@ if (document.getElementById('companyGrid')) {
 }
 
 /* ============================================================
-   DETAIL PAGE — Tab switching & AJAX data loading
+   DETAIL PAGE - Tab switching & AJAX data loading
    ============================================================ */
 
-const PERUSAHAAN_ID = window.PERUSAHAAN_ID || null;
-const loaded = {}; // cache per tab
+const loaded = {};
 
-// Tab switching
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         const target = this.dataset.tab;
 
-        // UI
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         this.classList.add('active');
         document.getElementById('panel-' + target).classList.add('active');
 
-        // Load data if not cached
-        if (!loaded[target] && PERUSAHAAN_ID) {
+        // Reload reviews every time to reflect new submissions
+        if ((!loaded[target] || target === 'reviews') && PERUSAHAAN_ID) {
             loadTab(target);
         }
     });
 });
 
-// Auto-load first tab
 if (PERUSAHAAN_ID) {
     loadTab('overview');
 }
@@ -135,13 +139,12 @@ function loadTab(tab) {
         .catch(() => {
             panel.innerHTML = `
             <div class="no-data">
-                <div class="icon">⚠️</div>
+                <div class="icon">&#9888;&#65039;</div>
                 <p>Gagal memuat data. Coba refresh halaman.</p>
             </div>`;
         });
 }
 
-// ── Render dispatcher ──────────────────────────────────────
 function renderTab(tab, data, panel) {
     switch (tab) {
         case 'overview':    renderOverview(data, panel);    break;
@@ -151,7 +154,7 @@ function renderTab(tab, data, panel) {
     }
 }
 
-/* ── Overview ─────────────────────────────────────────────── */
+/* ---------- Overview ---------- */
 function renderOverview(data, panel) {
     const p  = data.perusahaan;
     const rs = data.review_stats;
@@ -162,13 +165,13 @@ function renderOverview(data, panel) {
 
     let html = `<div class="overview-grid">`;
 
-    // Kiri: info umum
+    // Left: info umum
     html += `
     <div class="info-card reveal visible">
         <h3>Informasi Umum</h3>
         <div class="info-list">
             <div class="info-row">
-                <div class="ico">🌐</div>
+                <div class="ico">&#127760;</div>
                 <div class="txt">
                     <div class="lbl">Website</div>
                     <div class="val">${p.website
@@ -178,21 +181,21 @@ function renderOverview(data, panel) {
                 </div>
             </div>
             <div class="info-row">
-                <div class="ico">📍</div>
+                <div class="ico">&#128205;</div>
                 <div class="txt">
                     <div class="lbl">Lokasi</div>
                     <div class="val">${p.lokasi || '-'}</div>
                 </div>
             </div>
             <div class="info-row">
-                <div class="ico">👤</div>
+                <div class="ico">&#128100;</div>
                 <div class="txt">
                     <div class="lbl">Recruiter</div>
                     <div class="val">${p.recruiter_nama || '-'}</div>
                 </div>
             </div>
             <div class="info-row">
-                <div class="ico">💼</div>
+                <div class="ico">&#128188;</div>
                 <div class="txt">
                     <div class="lbl">Lowongan Aktif</div>
                     <div class="val">${totalJobs} posisi</div>
@@ -201,7 +204,7 @@ function renderOverview(data, panel) {
         </div>
     </div>`;
 
-    // Kanan: ringkasan review
+    // Right: review summary
     html += `<div class="info-card reveal visible"><h3>Ringkasan Review</h3>`;
     if (total > 0) {
         html += `
@@ -224,11 +227,11 @@ function renderOverview(data, panel) {
             </div>
         </div>`;
     } else {
-        html += `<div class="no-data" style="padding:24px 0"><div class="icon" style="font-size:2rem">📝</div><p>Belum ada review</p></div>`;
+        html += `<div class="no-data" style="padding:24px 0"><div class="icon" style="font-size:2rem">&#128221;</div><p>Belum ada review</p></div>`;
     }
-    html += `</div></div>`; // end overview-grid
+    html += `</div></div>`;
 
-    // Deskripsi
+    // Description
     if (p.deskripsi) {
         html += `
         <div class="info-card reveal visible" style="margin-bottom:14px">
@@ -237,7 +240,7 @@ function renderOverview(data, panel) {
         </div>`;
     }
 
-    // Review terbaru
+    // Recent reviews
     if (rr.length > 0) {
         html += `<div class="section-title">Review Terbaru</div><div class="recent-reviews">`;
         rr.forEach(r => {
@@ -246,7 +249,7 @@ function renderOverview(data, panel) {
                 <div class="top">
                     <div>
                         <span class="reviewer">${r.reviewer || 'Anonim'}</span>
-                        ${r.posisi_user ? `<span class="pos"> · ${r.posisi_user}</span>` : ''}
+                        ${r.posisi_user ? `<span class="pos"> &middot; ${r.posisi_user}</span>` : ''}
                     </div>
                     ${renderStars(r.rating)}
                 </div>
@@ -256,7 +259,7 @@ function renderOverview(data, panel) {
         html += `
         <a href="#" onclick="switchTab('reviews');return false;"
            style="font-size:13px;color:var(--blue);text-decoration:none;display:inline-block;margin-top:4px;font-weight:500">
-            Lihat semua review →
+            Lihat semua review &rarr;
         </a>
         </div>`;
     }
@@ -264,45 +267,153 @@ function renderOverview(data, panel) {
     panel.innerHTML = html;
 }
 
-/* ── Reviews ──────────────────────────────────────────────── */
+/* ---------- Reviews ---------- */
 function renderReviews(data, panel) {
-    if (!data || data.length === 0) {
-        panel.innerHTML = '<div class="no-data"><div class="icon">💬</div><p>Belum ada review untuk perusahaan ini.</p></div>';
-        return;
+    let html = '';
+
+    // Review form (only for regular users)
+    if (USER_ROLE === 'user' && USER_ID) {
+        html += `
+        <div class="review-form-card" id="reviewFormCard">
+            <h3 class="review-form-title">Tulis Review Anda</h3>
+            <p class="review-form-sub">Bagikan pengalaman Anda tentang perusahaan ini</p>
+            <form id="reviewForm" onsubmit="submitReview(event)">
+                <div class="star-picker" id="starPicker">
+                    <span class="star-pick" data-val="1" onclick="setRating(1)">&#9733;</span>
+                    <span class="star-pick" data-val="2" onclick="setRating(2)">&#9733;</span>
+                    <span class="star-pick" data-val="3" onclick="setRating(3)">&#9733;</span>
+                    <span class="star-pick" data-val="4" onclick="setRating(4)">&#9733;</span>
+                    <span class="star-pick" data-val="5" onclick="setRating(5)">&#9733;</span>
+                    <span class="rating-label" id="ratingLabel">Pilih rating</span>
+                </div>
+                <input type="hidden" id="ratingValue" name="rating" value="0">
+                <div class="form-group">
+                    <label>Posisi Anda <span class="optional">(opsional)</span></label>
+                    <input type="text" id="reviewPosisi" name="posisi_user" placeholder="cth: Software Engineer" maxlength="100">
+                </div>
+                <div class="form-group">
+                    <label>Review Anda <span class="required">*</span></label>
+                    <textarea id="reviewIsi" name="isi_review" rows="4" placeholder="Ceritakan pengalaman kerja, budaya perusahaan, prosesi interview, dll." required></textarea>
+                </div>
+                <button type="submit" class="btn-submit-review" id="btnSubmitReview">Kirim Review</button>
+                <div class="form-msg" id="reviewFormMsg" style="display:none"></div>
+            </form>
+        </div>`;
     }
 
-    let html = '<div class="reviews-list">';
-    data.forEach(r => {
-        html += `
-        <div class="review-card-full reveal visible">
-            <div class="review-header">
-                <div class="reviewer-info">
-                    <div class="reviewer-avatar">${initials(r.reviewer_nama)}</div>
-                    <div>
-                        <div class="reviewer-name">${r.reviewer_nama || 'Anonim'}</div>
-                        <div class="reviewer-pos">${r.posisi_user || 'Karyawan'}</div>
+    if (!data || data.length === 0) {
+        html += '<div class="no-data"><div class="icon">&#128172;</div><p>Belum ada review untuk perusahaan ini.</p></div>';
+    } else {
+        html += '<div class="reviews-list">';
+        data.forEach(r => {
+            html += `
+            <div class="review-card-full reveal visible">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar">${initials(r.reviewer_nama)}</div>
+                        <div>
+                            <div class="reviewer-name">${r.reviewer_nama || 'Anonim'}</div>
+                            <div class="reviewer-pos">${r.posisi_user || 'Karyawan'}</div>
+                        </div>
                     </div>
+                    <div class="review-date">${formatDate(r.created_at)}</div>
                 </div>
-                <div class="review-date">${formatDate(r.created_at)}</div>
-            </div>
-            <div class="review-stars">${renderStars(r.rating)}</div>
-            <div class="review-body">"${r.isi_review || ''}"</div>
-        </div>`;
-    });
-    html += '</div>';
+                <div class="review-stars">${renderStars(r.rating)}</div>
+                <div class="review-body">"${r.isi_review || ''}"</div>
+            </div>`;
+        });
+        html += '</div>';
+    }
     panel.innerHTML = html;
 
     const badge = document.querySelector('[data-tab="reviews"] .tab-count');
-    if (badge) badge.textContent = data.length;
+    if (badge) badge.textContent = data ? data.length : 0;
 }
 
-/* ── Lamaran (Jobs list) ──────────────────────────────────── */
+// Star rating picker
+let currentRating = 0;
+const ratingLabels = ['', 'Sangat Buruk', 'Buruk', 'Cukup', 'Baik', 'Sangat Baik'];
+
+function setRating(val) {
+    currentRating = val;
+    document.getElementById('ratingValue').value = val;
+    document.getElementById('ratingLabel').textContent = ratingLabels[val] || '';
+    document.querySelectorAll('.star-pick').forEach(s => {
+        s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+    });
+}
+
+// Submit review
+function submitReview(e) {
+    e.preventDefault();
+    const rating = parseInt(document.getElementById('ratingValue').value);
+    const posisi = document.getElementById('reviewPosisi').value.trim();
+    const isi    = document.getElementById('reviewIsi').value.trim();
+    const msgEl  = document.getElementById('reviewFormMsg');
+    const btn    = document.getElementById('btnSubmitReview');
+
+    if (rating < 1) {
+        msgEl.style.display = 'block';
+        msgEl.style.color   = '#DC2626';
+        msgEl.textContent   = 'Silakan pilih rating terlebih dahulu.';
+        return;
+    }
+    if (!isi || isi.length < 3) {
+        msgEl.style.display = 'block';
+        msgEl.style.color   = '#DC2626';
+        msgEl.textContent   = 'Review minimal 3 karakter.';
+        return;
+    }
+
+    btn.disabled    = true;
+    btn.textContent = 'Mengirim...';
+
+    fetch('/perusahaan/review', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken(),
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+            nama_perusahaan: PERUSAHAAN_NAMA,
+            rating: rating,
+            posisi_user: posisi,
+            isi_review: isi,
+        }),
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.error) throw new Error(res.error);
+        msgEl.style.display = 'block';
+        msgEl.style.color   = '#059669';
+        msgEl.textContent   = res.message;
+        document.getElementById('reviewForm').reset();
+        setRating(0);
+        // Reload reviews tab
+        loaded['reviews'] = false;
+        loadTab('reviews');
+        // Also reload overview to update rating summary
+        loaded['overview'] = false;
+    })
+    .catch(err => {
+        msgEl.style.display = 'block';
+        msgEl.style.color   = '#DC2626';
+        msgEl.textContent   = err.message || 'Gagal mengirim review.';
+    })
+    .finally(() => {
+        btn.disabled    = false;
+        btn.textContent = 'Kirim Review';
+    });
+}
+
+/* ---------- Lamaran (Jobs list) ---------- */
 function renderLamaran(data, panel) {
     const jobs = data.jobs || [];
     const role = data.role;
 
     if (jobs.length === 0) {
-        panel.innerHTML = '<div class="no-data"><div class="icon">📋</div><p>Tidak ada lowongan dari perusahaan ini.</p></div>';
+        panel.innerHTML = '<div class="no-data"><div class="icon">&#128203;</div><p>Tidak ada lowongan dari perusahaan ini.</p></div>';
         return;
     }
 
@@ -320,7 +431,17 @@ function renderLamaran(data, panel) {
         const tp     = tipeMap[j.tipe] || { label: j.tipe, cls: '' };
         const gajiMin = j.gaji_min ? formatRupiah(j.gaji_min) : null;
         const gajiMax = j.gaji_max ? formatRupiah(j.gaji_max) : null;
-        const gajiStr = gajiMin && gajiMax ? gajiMin + ' – ' + gajiMax : (gajiMin || gajiMax || null);
+        const gajiStr = gajiMin && gajiMax ? gajiMin + ' \u2013 ' + gajiMax : (gajiMin || gajiMax || null);
+
+        // Apply button logic (only for regular users)
+        let applyHTML = '';
+        if (role === 'user') {
+            if (parseInt(j.sudah_lamar) === 1) {
+                applyHTML = `<button class="btn-apply applied" disabled>&#10003; Sudah Melamar</button>`;
+            } else {
+                applyHTML = `<button class="btn-apply" onclick="applyJob(${j.id}, this)">Lamar Sekarang</button>`;
+            }
+        }
 
         html += `
         <div class="job-item reveal visible">
@@ -328,15 +449,16 @@ function renderLamaran(data, panel) {
                 <h4>${j.nama_posisi}</h4>
                 <div class="meta">
                     <span class="tipe-badge ${tp.cls}">${tp.label}</span>
-                    ${j.lokasi ? `<span>📍 ${j.lokasi}</span>` : ''}
-                    ${gajiStr ? `<span class="gaji-range">💰 ${gajiStr}</span>` : ''}
+                    ${j.lokasi ? `<span>&#128205; ${j.lokasi}</span>` : ''}
+                    ${gajiStr ? `<span class="gaji-range">&#128176; ${gajiStr}</span>` : ''}
                 </div>
             </div>
             <div class="job-right">
                 ${role !== 'user'
-                    ? `<span class="applicant-count">👥 ${j.total_lamaran || 0} pelamar</span>`
+                    ? `<span class="applicant-count">&#128101; ${j.total_lamaran || 0} pelamar</span>`
                     : ''}
-                <button class="btn-detail-job" onclick="lihatDetailJob(${j.id})">Lihat Detail</button>
+                <button class="btn-detail-job" onclick="lihatDetailJob(${j.id})">Detail</button>
+                ${applyHTML}
             </div>
         </div>`;
     });
@@ -347,14 +469,45 @@ function renderLamaran(data, panel) {
     if (badge) badge.textContent = jobs.length;
 }
 
-/* ── Connections ──────────────────────────────────────────── */
+// Apply job
+function applyJob(jobId, btnEl) {
+    if (!confirm('Apakah Anda yakin ingin melamar pekerjaan ini?')) return;
+
+    btnEl.disabled    = true;
+    btnEl.textContent = 'Mengirim...';
+
+    fetch('/perusahaan/apply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken(),
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ job_id: jobId }),
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.error) throw new Error(res.error);
+        btnEl.textContent = '\u2713 Sudah Melamar';
+        btnEl.classList.add('applied');
+        // Reload lamaran to reflect new count
+        loaded['lamaran'] = false;
+    })
+    .catch(err => {
+        alert(err.message || 'Gagal mengirim lamaran.');
+        btnEl.disabled    = false;
+        btnEl.textContent = 'Lamar Sekarang';
+    });
+}
+
+/* ---------- Connections ---------- */
 function renderConnections(data, panel) {
     const conns = data.connections || [];
 
     if (data.note === 'table_not_ready') {
         panel.innerHTML = `
         <div class="no-data">
-            <div class="icon">🔗</div>
+            <div class="icon">&#128279;</div>
             <p>Fitur koneksi belum aktif.<br>
             <small style="font-size:12px;color:var(--text-3)">Import SQL tabel perusahaan_connections terlebih dahulu.</small></p>
         </div>`;
@@ -362,7 +515,7 @@ function renderConnections(data, panel) {
     }
 
     if (conns.length === 0) {
-        panel.innerHTML = '<div class="no-data"><div class="icon">🔗</div><p>Belum ada koneksi perusahaan yang terdaftar.</p></div>';
+        panel.innerHTML = '<div class="no-data"><div class="icon">&#128279;</div><p>Belum ada koneksi perusahaan yang terdaftar.</p></div>';
         return;
     }
 
@@ -380,8 +533,8 @@ function renderConnections(data, panel) {
             ${logoHTML}${placeholderHTML}
             <div class="conn-info">
                 <h4>${c.connected_nama}</h4>
-                <div class="tipe-tag">🔗 ${c.tipe || 'Partner'}</div>
-                ${c.connected_lokasi ? `<div class="lokasi-tag">📍 ${c.connected_lokasi}</div>` : ''}
+                <div class="tipe-tag">&#128279; ${c.tipe || 'Partner'}</div>
+                ${c.connected_lokasi ? `<div class="lokasi-tag">&#128205; ${c.connected_lokasi}</div>` : ''}
             </div>
         </a>`;
     });
@@ -392,13 +545,13 @@ function renderConnections(data, panel) {
     if (badge) badge.textContent = conns.length;
 }
 
-/* ── Helper: switch tab dari luar ─────────────────────────── */
+/* ---------- Helper: switch tab ---------- */
 function switchTab(tabName) {
     const btn = document.querySelector('[data-tab="' + tabName + '"]');
     if (btn) btn.click();
 }
 
-/* ── Modal Detail Job ─────────────────────────────────────── */
+/* ---------- Modal Detail Job ---------- */
 function lihatDetailJob(id) {
     fetch('/jobs/' + id)
         .then(r => r.json())
@@ -406,7 +559,7 @@ function lihatDetailJob(id) {
             const overlay = document.getElementById('modalOverlay');
             if (!overlay) return;
             document.getElementById('modalPosisi').textContent    = job.nama_posisi;
-            document.getElementById('modalPerusahaan').textContent = job.nama_perusahaan + (job.lokasi ? ' · ' + job.lokasi : '');
+            document.getElementById('modalPerusahaan').textContent = job.nama_perusahaan + (job.lokasi ? ' \u00b7 ' + job.lokasi : '');
             let body = '';
             if (job.deskripsi)   body += `<p><strong>Deskripsi:</strong><br>${job.deskripsi}</p><br>`;
             if (job.requirement) body += `<p><strong>Requirement:</strong><br>${job.requirement}</p>`;
@@ -423,7 +576,6 @@ function tutupModal() {
     if (overlay) overlay.style.display = 'none';
 }
 
-// Tutup modal klik di luar
 document.addEventListener('click', e => {
     const overlay = document.getElementById('modalOverlay');
     if (overlay && e.target === overlay) tutupModal();

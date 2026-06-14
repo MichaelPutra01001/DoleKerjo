@@ -1,3 +1,15 @@
+// ── Toggle Password Visibility ──
+function togglePass(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '⌣';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+    }
+}
+
 function handleLogin(e) {
     e.preventDefault();
     const user = document.getElementById('username').value.trim();

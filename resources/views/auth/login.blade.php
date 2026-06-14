@@ -32,13 +32,16 @@
 <section class="login-container">
     <div class="login-card">
         <h2 id="loginTitle">Masuk ke Akun</h2>
-        <p class="sub" id="loginSub">Selamat datang kembali pencari kerja</p>
+        <p class="sub" id="loginSub">Selamat datang kembali</p>
 
         <form action="{{ route('login') }}" method="POST">
             @csrf
             <input type="text" name="username" id="usernameInput" placeholder="Email atau Username"
                    value="{{ old('username') }}" required>
-            <input type="password" name="password" placeholder="Password" required>
+            <div class="input-wrap">
+                <input type="password" name="password" id="password" placeholder="Password" required>
+                <button type="button" class="toggle-pass" onclick="togglePass('password', this)" tabindex="-1">👁</button>
+            </div>
             <div style="text-align: right; margin-top: -4px;">
                 <a href="#" id="forgotPasswordLink" style="font-size: 13px; color: var(--blue); text-decoration: none; font-weight: 500;">Lupa password?</a>
             </div>
