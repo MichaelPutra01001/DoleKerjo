@@ -1,0 +1,119 @@
+/* =============================================
+   DARK MODE — GradMatch Global Stylesheet
+   ============================================= */
+
+/* Transition for theme switching */
+body, nav, aside, footer, section, div, a, button, input, select, textarea {
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Dark mode theme variables */
+html[data-theme="dark"],
+html.dark {
+    --text:       #F3F4F6;
+    --text-2:     #D1D5DB;
+    --text-3:     #9CA3AF;
+    --border:     #2D3748;
+    --bg:         #0F172A; /* Deep dark slate background */
+    --white:      #1E293B; /* Card / container background */
+    --blue-light: #1E3A8A; /* Dark blue background */
+    --blue-mid:   #1E40AF;
+    --blue:       #38BDF8; /* Accent color: bright cyan-blue for accessibility */
+    --blue-hover: #0EA5E9;
+    --green:      #4ADE80;
+    --green-bg:   #064E3B;
+    --orange:     #FB923C;
+    --orange-bg:  #7C2D12;
+    --yellow:     #FACC15;
+    --yellow-bg:  #713F12;
+    --shadow-sm:  0 1px 4px rgba(0,0,0,.3);
+    --shadow:     0 4px 16px rgba(0,0,0,.4);
+}
+
+/* Custom adjustment for input text colors in dark mode */
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+    color: var(--text) !important;
+    background: #151D2A !important;
+    border-color: var(--border) !important;
+}
+
+/* Fix SVG colors inside elements in dark theme */
+html[data-theme="dark"] svg {
+    stroke: currentColor;
+}
+
+/* Specific overrides for visual elegance */
+html[data-theme="dark"] .avatar {
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .sidebar li.keluar:hover {
+    background: #441A1E;
+    color: #FF5A5F;
+}
+
+/* Navbar specific elements in dark mode */
+html[data-theme="dark"] .navbar .nav-links a:hover {
+    background: #151D2A;
+}
+
+html[data-theme="dark"] .nav-links button[type="submit"] {
+    color: #CC1016 !important;
+}
+
+html[data-theme="dark"] .nav-links button[type="submit"]:hover {
+    background: #441A1E !important;
+}
+
+/* Theme Toggle Button Styles */
+.theme-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, color 0.25s ease, transform 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--bg);
+    color: var(--text);
+    transform: scale(1.05);
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+.theme-toggle-btn svg {
+    display: block;
+    fill: none;
+    stroke: currentColor;
+}
+
+/* Hide sun in light, hide moon in dark */
+html[data-theme="dark"] .theme-toggle-btn .sun-icon {
+    display: block;
+}
+html[data-theme="dark"] .theme-toggle-btn .moon-icon {
+    display: none;
+}
+html:not([data-theme="dark"]) .theme-toggle-btn .sun-icon {
+    display: none;
+}
+html:not([data-theme="dark"]) .theme-toggle-btn .moon-icon {
+    display: block;
+}
+
+/* Skeleton loader matching dark theme */
+html[data-theme="dark"] .skeleton {
+    background: linear-gradient(90deg, #1E293B 25%, #334155 50%, #1E293B 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}

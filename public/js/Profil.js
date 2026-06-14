@@ -111,7 +111,7 @@ function renderProfil(data) {
                 </div>`;
         }).join('');
     } else {
-        lamaranList.innerHTML = '<p style="font-size:14px;color:#777">Belum ada riwayat lamaran.</p>';
+        lamaranList.innerHTML = '<p style="font-size:14px;color:var(--text-3)">Belum ada riwayat lamaran.</p>';
     }
 }
 

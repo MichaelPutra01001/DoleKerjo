@@ -30,7 +30,7 @@ function lihatDetail(jobId) {
         document.getElementById('modalBody').innerHTML = `
             <p><strong>Tipe:</strong> ${job.tipe}</p>
             <p><strong>Gaji:</strong> ${gaji}</p>
-            <hr style="margin:12px 0;border:none;border-top:1px solid #E2E5E9">
+            <hr style="margin:12px 0;border:none;border-top:1px solid var(--border)">
             <p><strong>Deskripsi:</strong></p>
             <p style="margin-top:6px">${job.deskripsi ?? '-'}</p>
             <p style="margin-top:12px"><strong>Requirements:</strong></p>

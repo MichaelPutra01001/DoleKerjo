@@ -1,0 +1,172 @@
+/* =============================================
+   REGIS RECRUITER — GradMatch
+   ============================================= */
+
+/* ── Card wider for recruiter form ── */
+.register-card {
+    max-width: 620px !important;
+    padding: 36px 44px 32px !important;
+}
+
+/* ── Card header ── */
+.card-header {
+    margin-bottom: 28px !important;
+}
+.card-header h2 {
+    font-size: 1.25rem !important;
+    letter-spacing: -.3px;
+    margin-bottom: 5px;
+}
+.card-header .sub {
+    font-size: 13px !important;
+    line-height: 1.5;
+}
+
+/* ── Progress Bar ── */
+.steps-progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding: 0 4px;
+}
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    position: relative;
+    z-index: 2;
+}
+.step-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 2px solid var(--border);
+    color: var(--text-3);
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .3s ease;
+}
+.step-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-3);
+    white-space: nowrap;
+    transition: all .3s ease;
+}
+.step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    margin: 0 6px;
+    transform: translateY(-10px);
+    transition: background .3s ease;
+}
+.step.active .step-num {
+    border-color: var(--blue);
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 0 0 3px var(--blue-light, rgba(10,102,194,.15));
+}
+html[data-theme="dark"] .step.active .step-num {
+    box-shadow: 0 0 0 3px #152E4B;
+}
+.step.active .step-label { color: var(--blue); }
+.step.completed .step-num {
+    border-color: #057642;
+    background: #E6F4EA;
+    color: #057642;
+}
+.step.completed .step-label { color: var(--text-2); }
+.step-line.completed { background: #057642; }
+
+/* ── Form layout ── */
+form { gap: 0 !important; }
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    margin-bottom: 16px;
+}
+/* When form-group is inside form-row, parent handles mb */
+.form-row .form-group { margin-bottom: 0; }
+
+/* ── Labels ── */
+.form-group label {
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.2px !important;
+    color: var(--text-2) !important;
+    text-transform: none !important;
+}
+
+/* ── Inputs ── */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+    font-size: 13.5px !important;
+    padding: 9px 12px !important;
+}
+
+/* ── Textarea ── */
+textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    resize: vertical;
+    box-sizing: border-box;
+}
+textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(10,102,194,.12);
+}
+
+/* ── Buttons ── */
+.btn-next, .btn-back, .btn-submit {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+.btn-next, .btn-submit {
+    width: 100%;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    margin-top: 8px;
+}
+.btn-next:hover, .btn-submit:hover { opacity: .88; }
+.btn-back {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-2);
+}
+.btn-back:hover { background: var(--bg); }
+
+/* ── Step panel animation ── */
+.form-step-panel { animation: fadeIn .3s ease both; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}

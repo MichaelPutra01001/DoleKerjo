@@ -200,7 +200,7 @@ footer {
   }
   .login-container {
     padding: 32px 16px;
-    align-items: stretch;
+    align-items: center;
   }
   .login-card {
     border-radius: 10px;
@@ -218,3 +218,5 @@ footer {
   .login-card h2 { font-size: 1.4rem; }
   button[type="submit"] { font-size: 14.5px; padding: 11px; }
 }
+
+
