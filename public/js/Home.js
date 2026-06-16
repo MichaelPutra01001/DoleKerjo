@@ -12,7 +12,7 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 // Count-up
 function countUp(el) {
     const target = parseInt(el.dataset.target);
-    const suffix = target >= 10000 ? '+' : target === 85 ? '%' : '+';
+    const suffix = target >= 10000 ? '+' : '+';
     const duration = 1600;
     const start = performance.now();
     const step = now => {

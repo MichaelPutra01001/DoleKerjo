@@ -187,6 +187,16 @@ ul { list-style: none; }
 .grid-2 .card li:last-child { border-bottom: none; }
 
 /* ── Job recommendations ── */
+.job-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--transition);
+  border-radius: 6px;
+  margin: 0 -8px;
+  padding: 0 8px;
+}
+.job-card-link:hover { background: var(--blue-light); }
 .job-card {
   display: flex;
   align-items: center;
@@ -208,6 +218,26 @@ ul { list-style: none; }
   white-space: nowrap;
   flex-shrink: 0;
 }
+.matched-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.match-tag {
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--blue-light);
+  color: var(--blue);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.no-results {
+  text-align: center;
+  padding: 20px 0;
+}
+.no-results p { font-size: 14px; color: var(--text-2); }
+.no-results-hint { font-size: 13px; color: var(--text-3); margin-top: 4px; }
 
 /* ── Back button ── */
 .btn-back {

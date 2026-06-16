@@ -127,7 +127,9 @@ class RecruiterController extends Controller
             $job->tipe_label = $map['label'];
         }
 
-        return view('recruiter.jobs', compact('jobs', 'sort', 'dir'));
+        $kategoriList = DB::select("SELECT nama FROM kategori ORDER BY nama ASC");
+
+        return view('recruiter.jobs', compact('jobs', 'sort', 'dir', 'kategoriList'));
     }
 
     public function storeJob(Request $request)
@@ -140,6 +142,7 @@ class RecruiterController extends Controller
             'nama_perusahaan' => 'required|string|max:100',
             'lokasi'          => 'nullable|string|max:100',
             'tipe'            => 'required|in:full-time,part-time,remote,hybrid,contract,partnership',
+            'kategori'        => 'required|string|max:100',
             'deskripsi'       => 'nullable|string',
             'requirement'     => 'nullable|string',
             'gaji_min'        => 'nullable|integer|min:0',
@@ -147,13 +150,14 @@ class RecruiterController extends Controller
         ]);
 
         DB::insert("
-            INSERT INTO jobs (nama_posisi, nama_perusahaan, lokasi, tipe, deskripsi, requirement, gaji_min, gaji_max, recruiter_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO jobs (nama_posisi, nama_perusahaan, lokasi, tipe, kategori, deskripsi, requirement, gaji_min, gaji_max, recruiter_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ", [
             $request->nama_posisi,
             $request->nama_perusahaan,
             $request->lokasi,
             $request->tipe,
+            $request->kategori,
             $request->deskripsi,
             $request->requirement,
             $request->gaji_min ?: null,
@@ -178,6 +182,7 @@ class RecruiterController extends Controller
             'nama_perusahaan' => 'required|string|max:100',
             'lokasi'          => 'nullable|string|max:100',
             'tipe'            => 'required|in:full-time,part-time,remote,hybrid,contract,partnership',
+            'kategori'        => 'required|string|max:100',
             'deskripsi'       => 'nullable|string',
             'requirement'     => 'nullable|string',
             'gaji_min'        => 'nullable|integer|min:0',
@@ -185,11 +190,11 @@ class RecruiterController extends Controller
         ]);
 
         DB::update("
-            UPDATE jobs SET nama_posisi=?, nama_perusahaan=?, lokasi=?, tipe=?, deskripsi=?, requirement=?, gaji_min=?, gaji_max=?
+            UPDATE jobs SET nama_posisi=?, nama_perusahaan=?, lokasi=?, tipe=?, kategori=?, deskripsi=?, requirement=?, gaji_min=?, gaji_max=?
             WHERE id = ? AND recruiter_id = ?
         ", [
             $request->nama_posisi, $request->nama_perusahaan, $request->lokasi,
-            $request->tipe, $request->deskripsi, $request->requirement,
+            $request->tipe, $request->kategori, $request->deskripsi, $request->requirement,
             $request->gaji_min ?: null, $request->gaji_max ?: null,
             $id, $uid,
         ]);

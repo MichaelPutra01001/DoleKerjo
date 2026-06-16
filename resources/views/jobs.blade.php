@@ -7,7 +7,6 @@
     <title>List Job - GradMatch</title>
     <link rel="stylesheet" href="{{ asset('css/jobs.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
             const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -16,7 +15,7 @@
         })();
     </script>
 </head>
-<body>
+<body class="jobs-listing-page">
 
 <nav class="navbar">
     <a href="{{ route('home') }}" class="brand">GradMatch</a>
@@ -39,39 +38,165 @@
     </div>
 </nav>
 
-<section>
-    <div class="container">
-        <h2>Daftar Lowongan</h2>
+<section class="listing-section">
+    <div class="listing-container">
 
-        @forelse ($jobs as $job)
-            <div class="job-card reveal">
-                <div>
-                    <h3>{{ $job->nama_posisi }}</h3>
-                    <p>{{ $job->nama_perusahaan }} &nbsp;·&nbsp; {{ $job->lokasi ?? '-' }}</p>
-                    <span class="badge-type {{ $job->tipe_class }}">{{ $job->tipe_label }}</span>
+        <!-- ── Left: Filter Sidebar ── -->
+        <aside class="filter-sidebar" id="filterSidebar">
+            <form id="filterForm" method="GET" action="{{ route('jobs') }}">
+
+                <!-- Sort -->
+                <div class="filter-group">
+                    <h4>Urutkan</h4>
+                    <label class="filter-radio">
+                        <input type="radio" name="sort" value="gaji" {{ $sort === 'gaji' ? 'checked' : '' }}>
+                        <span class="radio-dot"></span>
+                        Gaji Tertinggi
+                    </label>
+                    <label class="filter-radio">
+                        <input type="radio" name="sort" value="terbaru" {{ $sort === 'terbaru' ? 'checked' : '' }}>
+                        <span class="radio-dot"></span>
+                        Terbaru
+                    </label>
                 </div>
-                <button class="btn-detail" data-id="{{ $job->id }}">Lihat Detail</button>
+
+                <!-- Kategori -->
+                @php
+                    $trendLimit = 5;
+                    $hasCheckedOverflow = false;
+                    foreach(array_slice($categories, $trendLimit) as $cat) {
+                        if(in_array($cat->nama, (array)$kategori)) { $hasCheckedOverflow = true; break; }
+                    }
+                @endphp
+                <div class="filter-group">
+                    <h4>Kategori</h4>
+                    <div class="filter-list {{ $hasCheckedOverflow ? 'expanded' : '' }}" id="kategoriList">
+                        @foreach($categories as $i => $cat)
+                            <label class="filter-check {{ $i >= $trendLimit ? 'filter-overflow' : '' }}">
+                                <input type="checkbox" name="kategori[]" value="{{ $cat->nama }}" {{ in_array($cat->nama, (array)$kategori) ? 'checked' : '' }}>
+                                <span class="check-box"></span>
+                                {{ $cat->nama }}
+                                <small class="filter-count">({{ $cat->job_count }})</small>
+                            </label>
+                        @endforeach
+                        @if(count($categories) > $trendLimit)
+                            <button type="button" class="btn-show-more" onclick="toggleShowMore('kategoriList')">
+                                <span class="show-more-text">+{{ count($categories) - $trendLimit }} lainnya</span>
+                                <span class="show-less-text">Sembunyikan</span>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Tipe Kerja -->
+                <div class="filter-group">
+                    <h4>Tipe Kerja</h4>
+                    @foreach(['full-time','remote','hybrid','contract'] as $t)
+                    <label class="filter-check">
+                        <input type="checkbox" name="tipe[]" value="{{ $t }}" {{ in_array($t, (array)$tipe) ? 'checked' : '' }}>
+                        <span class="check-box"></span>
+                        {{ ucfirst($t) }}
+                    </label>
+                    @endforeach
+                </div>
+
+                <!-- Lokasi -->
+                @php
+                    $locLimit = 5;
+                    $allLocs = array_merge(array_map(function($l){ return $l->lokasi; }, $locations), ['remote']);
+                    $hasLocOverflow = false;
+                    foreach(array_slice($allLocs, $locLimit) as $loc) {
+                        if(in_array($loc, (array)$lokasi)) { $hasLocOverflow = true; break; }
+                    }
+                @endphp
+                <div class="filter-group">
+                    <h4>Lokasi</h4>
+                    <div class="filter-list {{ $hasLocOverflow ? 'expanded' : '' }}" id="lokasiList">
+                        @foreach($locations as $i => $loc)
+                            <label class="filter-check {{ $i >= $locLimit ? 'filter-overflow' : '' }}">
+                                <input type="checkbox" name="lokasi[]" value="{{ $loc->lokasi }}" {{ in_array($loc->lokasi, (array)$lokasi) ? 'checked' : '' }}>
+                                <span class="check-box"></span>
+                                {{ $loc->lokasi }}
+                            </label>
+                        @endforeach
+                        <label class="filter-check {{ count($locations) >= $locLimit ? 'filter-overflow' : '' }}">
+                            <input type="checkbox" name="lokasi[]" value="remote" {{ in_array('remote', (array)$lokasi) ? 'checked' : '' }}>
+                            <span class="check-box"></span>
+                            Remote / Mana saja
+                        </label>
+                        @if(count($allLocs) > $locLimit)
+                            <button type="button" class="btn-show-more" onclick="toggleShowMore('lokasiList')">
+                                <span class="show-more-text">+{{ count($allLocs) - $locLimit }} lainnya</span>
+                                <span class="show-less-text">Sembunyikan</span>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <button type="button" class="btn-reset-filter" onclick="resetFilter()">Reset Filter</button>
+            </form>
+
+            <!-- Mobile toggle -->
+            <button class="filter-toggle-mobile" id="filterToggle" onclick="toggleFilterMobile()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                Filter
+            </button>
+        </aside>
+
+        <!-- ── Right: Job List ── -->
+        <div class="listing-main">
+            <div class="listing-header">
+                <h2>Daftar Lowongan</h2>
+                <span class="job-count">{{ count($jobs) }} lowongan ditemukan</span>
             </div>
-        @empty
-            <p style="font-size:14px;color:#777;text-align:center;padding:40px 0">
-                Belum ada lowongan tersedia.
-            </p>
-        @endforelse
+
+            @forelse ($jobs as $job)
+                <div class="job-card reveal">
+                    <div class="job-info">
+                        <h3>{{ $job->nama_posisi }}</h3>
+                        <p>{{ $job->nama_perusahaan }} &nbsp;&middot;&nbsp; {{ $job->lokasi ?? '-' }}</p>
+                        <div class="job-badges">
+                            <span class="badge-type {{ $job->tipe_class }}">{{ $job->tipe_label }}</span>
+                            @if($job->kategori)
+                                <span class="badge-kategori">{{ ucfirst($job->kategori) }}</span>
+                            @endif
+                            @if($job->gaji_min)
+                                <span class="badge-gaji">Rp {{ number_format($job->gaji_min / 1000000, 0) }} - {{ number_format($job->gaji_max / 1000000, 0) }} Jt</span>
+                            @endif
+                            <span class="badge-pelamar">{{ $job->total_pelamar ?? 0 }} pelamar</span>
+                        </div>
+                    </div>
+                    <div class="job-actions">
+                        <button class="btn-daftar-cepat" data-job-id="{{ $job->id }}" {{ ($job->sudah_lamar ?? 0) ? 'disabled' : '' }}>
+                            @if($job->sudah_lamar ?? 0)
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Sudah Dilamar
+                            @else
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                                Daftar Cepat
+                            @endif
+                        </button>
+                        <a href="{{ route('jobs.show', $job->id) }}" class="btn-detail-link" title="Lihat detail lengkap">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    <p>Belum ada lowongan tersedia.</p>
+                    <p class="empty-sub">Coba ubah filter untuk melihat hasil lainnya.</p>
+                </div>
+            @endforelse
+        </div>
 
     </div>
 </section>
 
-<!-- ── Modal Detail Job ── -->
-<div id="modalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;">
-    <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:32px;max-width:520px;width:90%;max-height:80vh;overflow-y:auto;position:relative;color:var(--text);">
-        <button onclick="tutupModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3);">✕</button>
-        <h3 id="modalPosisi" style="font-size:1.2rem;font-weight:700;margin-bottom:4px"></h3>
-        <p id="modalPerusahaan" style="font-size:13.5px;color:var(--text-3);margin-bottom:16px"></p>
-        <div id="modalBody" style="font-size:14px;color:var(--text-2);line-height:1.7"></div>
-    </div>
-</div>
+<!-- Toast notification -->
+<div id="toast" class="toast"></div>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>&copy; 2026 GradMatch</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/jobs.js') }}"></script>

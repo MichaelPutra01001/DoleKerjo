@@ -131,7 +131,7 @@ class AdminController extends Controller
         $offset = ($page - 1) * $perPage;
 
         $users = DB::select("
-            SELECT id, nama, username, email, telepon, role, is_verified, created_at
+            SELECT id, nama, username, email, telepon, role, is_verified, email_verified, created_at
             FROM users {$whereClause}
             ORDER BY {$sort} {$dirSQL}
             LIMIT {$perPage} OFFSET {$offset}
@@ -173,6 +173,13 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Recruiter berhasil diverifikasi.');
     }
 
+    public function verifyUserEmail($id)
+    {
+        $this->guard();
+        DB::update("UPDATE users SET email_verified = 1 WHERE id = ?", [$id]);
+        return redirect()->back()->with('success', 'Email user berhasil diverifikasi.');
+    }
+
     public function deleteUser($id)
     {
         $this->guard();
@@ -188,6 +195,13 @@ class AdminController extends Controller
     {
         $this->guard();
 
+        // Dynamic kategori from DB
+        $kategoriList = DB::select("
+            SELECT k.*, (SELECT COUNT(*) FROM jobs WHERE kategori = k.nama) AS job_count
+            FROM kategori k
+            ORDER BY job_count DESC, k.nama ASC
+        ");
+
         $skills  = DB::select("SELECT * FROM skills ORDER BY kategori, nama");
         $grouped = [];
         foreach ($skills as $s) {
@@ -195,7 +209,7 @@ class AdminController extends Controller
         }
 
         $totalSkills = count($skills);
-        return view('admin.skills', compact('grouped', 'totalSkills'));
+        return view('admin.skills', compact('grouped', 'totalSkills', 'kategoriList'));
     }
 
     public function addSkill(Request $request)
@@ -204,7 +218,7 @@ class AdminController extends Controller
 
         $request->validate([
             'nama'     => 'required|string|max:100',
-            'kategori' => 'required|in:teknologi,desain,marketing,keuangan,manajemen,kesehatan,pendidikan,teknik,hukum,lainnya',
+            'kategori' => 'required|string|max:100',
         ]);
 
         try {
@@ -222,5 +236,39 @@ class AdminController extends Controller
         $this->guard();
         DB::delete("DELETE FROM skills WHERE id = ?", [$id]);
         return redirect('/admin/skills')->with('success', 'Skill berhasil dihapus.');
+    }
+
+    // ─── Kategori CRUD ──────────────────────────────────────────────
+    public function addKategori(Request $request)
+    {
+        $this->guard();
+
+        $request->validate([
+            'nama' => 'required|string|max:100',
+        ]);
+
+        try {
+            DB::insert("INSERT INTO kategori (nama) VALUES (?)", [$request->nama]);
+            return redirect('/admin/skills')->with('success', 'Kategori berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return redirect('/admin/skills')->with('error', 'Kategori sudah ada atau gagal ditambahkan.');
+        }
+    }
+
+    public function deleteKategori($id)
+    {
+        $this->guard();
+
+        // Check if any jobs use this kategori
+        $kat = DB::selectOne("SELECT nama FROM kategori WHERE id = ?", [$id]);
+        if ($kat) {
+            $jobCount = DB::selectOne("SELECT COUNT(*) AS c FROM jobs WHERE kategori = ?", [$kat->nama])->c;
+            if ($jobCount > 0) {
+                return redirect('/admin/skills')->with('error', "Tidak dapat menghapus kategori \"{$kat->nama}\" karena masih digunakan oleh {$jobCount} lowongan.");
+            }
+        }
+
+        DB::delete("DELETE FROM kategori WHERE id = ?", [$id]);
+        return redirect('/admin/skills')->with('success', 'Kategori berhasil dihapus.');
     }
 }

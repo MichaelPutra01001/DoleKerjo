@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Skill Matching - GradMatch</title>
     <link rel="stylesheet" href="{{ asset('css/matching.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
             const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -39,19 +39,48 @@
 </nav>
 
 <section class="upload-section">
-    <h2>Upload CV & Kompetensi</h2>
-    <p class="desc">Upload CV dalam format PDF atau DOCX, lalu masukkan skill yang kamu kuasai.</p>
-   <form id="matchingForm" class="form-card">
+    <h2>
+        <svg style="display:inline-block;vertical-align:-4px;margin-right:6px" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Skill Matching
+    </h2>
+    <p class="desc">Masukkan skill yang kamu kuasai, lalu sistem akan mencocokkan dengan lowongan yang tersedia.</p>
+
+    <form id="matchingForm" class="form-card" method="POST" action="{{ route('hasil') }}">
         @csrf
-        <input type="file" id="cvFile" accept=".pdf,.docx">
-        <p class="file-error" id="fileError"></p>
-        <input type="text" id="skillInput" placeholder="Masukkan skill (contoh: HTML, Python, UI/UX)">
-        <button type="submit">Cocokkan Sekarang</button>
+
+        <!-- Skill chips area -->
+        <div class="skill-label">Skill Kamu</div>
+        <div class="skill-chips-area" id="skillChipsArea">
+            @forelse($userSkills as $us)
+                <span class="skill-chip" data-skill="{{ $us->nama }}">
+                    {{ $us->nama }}
+                    <button type="button" class="chip-remove" onclick="removeChip(this)" aria-label="Hapus">&times;</button>
+                </span>
+            @empty
+                <span class="no-skills-hint" id="noSkillsHint">Belum ada skill di profil. Tambahkan di bawah.</span>
+            @endforelse
+        </div>
+
+        <!-- Add skill input -->
+        <div class="add-skill-row">
+            <input type="text" id="skillInput" placeholder="Ketik skill lalu tekan Enter (cth: React, Node.js)">
+            <button type="button" class="btn-add-skill" id="btnAddSkill" onclick="addSkillFromInput()">Tambah</button>
+        </div>
+        <p class="hint">Tekan Enter atau klik Tambah untuk menambahkan skill. Pisahkan dengan koma untuk banyak skill sekaligus.</p>
+
+        <!-- Hidden input that collects all skill names -->
+        <input type="hidden" name="skills" id="skillsHidden" value="">
+
+        <button type="submit" id="btnSubmit">Cocokkan Sekarang</button>
     </form>
 </section>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>&copy; 2026 GradMatch</p></footer>
 
+<!-- Pass profile skills to JS -->
+<script>
+    window.PROFILE_SKILLS = @json(array_map(fn($s) => $s->nama, $userSkills));
+</script>
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/matching.js') }}"></script>
 </body>

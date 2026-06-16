@@ -69,6 +69,12 @@ public function register(Request $request)
     $pendidikan = $request->input('pendidikan', '');
     $jurusan   = trim($request->input('jurusan', ''));
 
+    // Validate pendidikan against valid ENUM values; set null if empty/invalid
+    $validPendidikan = ['sma', 'd3', 's1', 's2', 's3'];
+    if (!in_array($pendidikan, $validPendidikan)) {
+        $pendidikan = null;
+    }
+
     if (!$nama || !$username || !$email || !$password || !$confirm) {
         return back()->withErrors(['Harap lengkapi semua kolom yang wajib diisi.'])->withInput();
     }

@@ -40,7 +40,15 @@
 
 <div class="layout">
     <aside class="sidebar">
-        <div class="avatar" id="sidebarAvatar">👤</div>
+        <div class="avatar-wrap" id="avatarWrap" title="Klik untuk upload foto">
+            <div class="avatar" id="sidebarAvatar">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="avatar-overlay">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            </div>
+            <input type="file" id="photoFileInput" accept=".jpg,.jpeg,.png,.webp" style="display:none">
+        </div>
         <h3 id="sidebarNama">Memuat...</h3>
         <ul>
             <li class="active" onclick="switchTab(this,'detail')">Detail Profil</li>
@@ -62,31 +70,109 @@
 
         <!-- ── TAB: DETAIL PROFIL ── -->
         <div class="tab-panel active" id="tab-detail">
-            <section class="card">
-                <h2>Informasi Pribadi</h2>
-                <div class="grid-4">
-                    <div><span>Nama Lengkap</span><strong id="detailNama">—</strong></div>
-                    <div><span>Email</span><strong id="detailEmail">—</strong></div>
-                    <div><span>No. Telepon</span><strong id="detailTelepon">—</strong></div>
-                    <div><span>Lokasi</span><strong id="detailLokasi">—</strong></div>
-                    <div><span>Pendidikan</span><strong id="detailPendidikan">—</strong></div>
-                    <div><span>Jurusan</span><strong id="detailJurusan">—</strong></div>
+
+            <div class="detail-grid">
+                <!-- Left: Main profile content -->
+                <div class="detail-main">
+                    <section class="card">
+                        <h2>Informasi Pribadi</h2>
+                        <div class="grid-4">
+                            <div><span>Nama Lengkap</span><strong id="detailNama">—</strong></div>
+                            <div><span>Email</span><strong id="detailEmail">—</strong></div>
+                            <div><span>No. Telepon</span><strong id="detailTelepon">—</strong></div>
+                            <div><span>Lokasi</span><strong id="detailLokasi">—</strong></div>
+                            <div><span>Pendidikan</span><strong id="detailPendidikan">—</strong></div>
+                            <div><span>Jurusan</span><strong id="detailJurusan">—</strong></div>
+                        </div>
+                        <div class="email-verify-row" id="emailVerifyRow" style="display:none">
+                            <span class="email-badge unverified" id="emailBadge">Belum diverifikasi</span>
+                            <button type="button" class="btn-verify" id="btnVerifyEmail" onclick="verifyEmail()">Verifikasi Email</button>
+                        </div>
+                    </section>
+                    <section class="card">
+                        <h2>Tentang Saya</h2>
+                        <p id="detailBio" style="font-size:14px;color:#555;line-height:1.7">—</p>
+                    </section>
+                    <section class="card">
+                        <h2>Keahlian</h2>
+                        <div class="skills" id="detailSkills">
+                            <span style="color:var(--text-3);font-size:13px">Belum ada skill yang ditambahkan.</span>
+                        </div>
+                        <div class="skill-add-form" id="skillAddForm">
+                            <div class="skill-add-row">
+                                <select id="skillSelect" class="skill-select">
+                                    <option value="">Pilih skill...</option>
+                                </select>
+                                <select id="skillLevel" class="skill-level-select">
+                                    <option value="pemula">Pemula</option>
+                                    <option value="menengah">Menengah</option>
+                                    <option value="mahir">Mahir</option>
+                                </select>
+                                <button type="button" class="btn-add-skill" id="btnAddSkill" onclick="addSkill()">Tambah</button>
+                            </div>
+                            <span class="save-msg" id="msg-skill"></span>
+                        </div>
+                    </section>
                 </div>
-            </section>
-            <section class="card">
-                <h2>Tentang Saya</h2>
-                <p id="detailBio" style="font-size:14px;color:#555;line-height:1.7">—</p>
-            </section>
-            <section class="card">
-                <h2>Keahlian</h2>
-                <div class="skills" id="detailSkills">
-                    <span style="color:var(--text-3);font-size:13px">Belum ada skill yang ditambahkan.</span>
-                </div>
-            </section>
+
+                <!-- Right: Completion Tracker (compact side widget) -->
+                <aside class="detail-aside">
+                    <div class="completion-widget" id="completionCard">
+                        <div class="cw-header">
+                            <span class="cw-title">Kelengkapan Profil</span>
+                            <span class="cw-percent" id="completionPercent">0%</span>
+                        </div>
+                        <div class="cw-bar-wrap">
+                            <div class="cw-bar" id="completionBar" style="width:0%"></div>
+                        </div>
+                        <p class="cw-sub" id="completionSub">Memuat data...</p>
+                        <div class="cw-steps" id="completionSteps"></div>
+                    </div>
+                </aside>
+            </div>
+
         </div>
 
         <!-- ── TAB: PENGATURAN AKUN ── -->
         <div class="tab-panel" id="tab-pengaturan">
+
+            <!-- CV Upload Zone -->
+            <section class="card">
+                <h2>Curriculum Vitae</h2>
+                <div class="cv-upload-zone" id="cvUploadZone">
+                    <div class="cv-drop-area" id="cvDropArea">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        <p class="cv-title">Upload atau taruh file CV kamu di sini</p>
+                        <p class="cv-subtitle">Format: DOCX / PDF &middot; Maksimal 5 MB</p>
+                        <label class="btn-upload-cv">
+                            <input type="file" id="cvFileInput" accept=".pdf,.docx,.doc" style="display:none">
+                            Pilih File
+                        </label>
+                    </div>
+                    <div class="cv-uploaded" id="cvUploaded" style="display:none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <div class="cv-file-info">
+                            <strong id="cvFileName">CV.pdf</strong>
+                            <span>CV berhasil diunggah</span>
+                        </div>
+                        <div class="cv-actions">
+                            <a href="#" id="cvDownloadLink" class="btn-cv-action btn-cv-download" title="Download">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>Download</span>
+                            </a>
+                            <label class="btn-cv-action btn-cv-replace" title="Ganti">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                                <span>Ganti</span>
+                                <input type="file" id="cvReplaceInput" accept=".pdf,.docx,.doc" style="display:none">
+                            </label>
+                            <button type="button" class="btn-cv-action btn-cv-delete" id="btnDeleteCV" title="Hapus" onclick="deleteCV()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                <span>Hapus</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <section class="card">
                 <h2>Ubah Informasi Pribadi</h2>

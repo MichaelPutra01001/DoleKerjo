@@ -66,6 +66,18 @@ function renderProfil(data) {
     // Sidebar
     document.getElementById('sidebarNama').textContent = u.nama || '—';
 
+    // Avatar
+    const avatarEl = document.getElementById('sidebarAvatar');
+    if (u.foto_profil) {
+        avatarEl.innerHTML = '';
+        avatarEl.style.backgroundImage = `url('/${u.foto_profil}')`;
+        avatarEl.style.backgroundSize = 'cover';
+        avatarEl.style.backgroundPosition = 'center';
+    } else {
+        avatarEl.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+        avatarEl.style.backgroundImage = '';
+    }
+
     // Detail Profil
     document.getElementById('detailNama').textContent       = u.nama       || '—';
     document.getElementById('detailEmail').textContent      = u.email      || '—';
@@ -75,15 +87,30 @@ function renderProfil(data) {
     document.getElementById('detailJurusan').textContent    = u.jurusan    || '—';
     document.getElementById('detailBio').textContent        = u.bio        || 'Belum ada deskripsi.';
 
-    // Skills
-    const skillsEl = document.getElementById('detailSkills');
-    if (data.skills && data.skills.length > 0) {
-        skillsEl.innerHTML = data.skills
-            .map(s => `<span>${s.nama}${s.level ? ' · ' + s.level : ''}</span>`)
-            .join('');
+    // Email verification state
+    const verifyRow = document.getElementById('emailVerifyRow');
+    const badge = document.getElementById('emailBadge');
+    const btnVerify = document.getElementById('btnVerifyEmail');
+    if (u.email_verified == 1) {
+        verifyRow.style.display = 'flex';
+        badge.textContent = 'Terverifikasi';
+        badge.className = 'email-badge verified';
+        btnVerify.style.display = 'none';
+    } else if (u.email_verified == 2) {
+        // Pending — waiting admin approval
+        verifyRow.style.display = 'flex';
+        badge.textContent = 'Menunggu verifikasi admin';
+        badge.className = 'email-badge pending';
+        btnVerify.style.display = 'none';
     } else {
-        skillsEl.innerHTML = '<span style="color:var(--text-3);font-size:13px">Belum ada skill yang ditambahkan.</span>';
+        verifyRow.style.display = 'flex';
+        badge.textContent = 'Belum diverifikasi';
+        badge.className = 'email-badge unverified';
+        btnVerify.style.display = '';
     }
+
+    // Skills
+    renderSkills(data.skills);
 
     // Isi form pengaturan (pre-fill)
     document.getElementById('set-nama').value   = u.nama    || '';
@@ -105,7 +132,7 @@ function renderProfil(data) {
                 <div class="lamaran-item">
                     <div>
                         <strong>${l.nama_posisi}</strong>
-                        <p>${l.nama_perusahaan} &nbsp;·&nbsp; ${tgl}</p>
+                        <p>${l.nama_perusahaan} &nbsp;&middot;&nbsp; ${tgl}</p>
                     </div>
                     <span class="status ${cls}">${label}</span>
                 </div>`;
@@ -113,6 +140,17 @@ function renderProfil(data) {
     } else {
         lamaranList.innerHTML = '<p style="font-size:14px;color:var(--text-3)">Belum ada riwayat lamaran.</p>';
     }
+
+    // ── Profile Completion Tracker ──
+    if (data.steps) {
+        renderCompletion(data.steps);
+    }
+
+    // ── CV state ──
+    renderCVState(u.cv);
+
+    // ── Load available skills for dropdown ──
+    loadSkillsList();
 }
 
 // ── Fetch data profil dari server ──
@@ -190,3 +228,336 @@ document.getElementById('formNotif').addEventListener('submit', function(e) {
 
 // ── Jalankan saat halaman dibuka ──
 loadProfil();
+
+// ══════════════════════════════════════════════════════════
+//  PROFILE COMPLETION
+// ══════════════════════════════════════════════════════════
+
+// Map step id → action to navigate user
+const stepActions = {
+    foto:  () => document.getElementById('avatarWrap').click(),
+    info:  () => { switchToPengaturan(); focusField('set-nama'); },
+    bio:   () => { switchToPengaturan(); focusField('set-bio'); },
+    cv:    () => { switchToPengaturan(); scrollToElement('cvUploadZone'); },
+    skill: () => { switchToDetail(); scrollToElement('detailSkills'); },
+    email: () => { switchToDetail(); scrollToElement('emailVerifyRow'); },
+};
+
+function switchToPengaturan() {
+    const li = document.querySelectorAll('.sidebar li')[1]; // Pengaturan Akun
+    switchTab(li, 'pengaturan');
+}
+function switchToDetail() {
+    const li = document.querySelectorAll('.sidebar li')[0]; // Detail Profil
+    switchTab(li, 'detail');
+}
+function focusField(id) {
+    setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }, 200);
+}
+function scrollToElement(id) {
+    setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+}
+
+function renderCompletion(steps) {
+    const bar     = document.getElementById('completionBar');
+    const percent = document.getElementById('completionPercent');
+    const sub     = document.getElementById('completionSub');
+    const stepsEl = document.getElementById('completionSteps');
+
+    if (!bar || !percent || !stepsEl) return;
+
+    // Animate bar
+    setTimeout(() => { bar.style.width = steps.percent + '%'; }, 100);
+    percent.textContent = steps.percent + '%';
+    sub.textContent = steps.done + ' dari ' + steps.total + ' langkah selesai';
+
+    // Render steps
+    const checkSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+    const circleSVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>';
+
+    stepsEl.innerHTML = steps.items.map(s => `
+        <div class="step-item ${s.done ? 'done' : 'clickable'}" data-step="${s.id}" onclick="onStepClick('${s.id}', ${s.done})">
+            <span class="step-icon">${s.done ? checkSVG : circleSVG}</span>
+            <span class="step-label">${s.label}</span>
+            ${!s.done ? '<span class="step-arrow">→</span>' : ''}
+        </div>
+    `).join('');
+}
+
+function onStepClick(stepId, done) {
+    if (done) return;
+    const action = stepActions[stepId];
+    if (action) action();
+}
+
+// ══════════════════════════════════════════════════════════
+//  CV UPLOAD
+// ══════════════════════════════════════════════════════════
+
+function renderCVState(cvPath) {
+    const dropArea  = document.getElementById('cvDropArea');
+    const uploaded  = document.getElementById('cvUploaded');
+    if (!dropArea || !uploaded) return;
+
+    if (cvPath) {
+        dropArea.style.display = 'none';
+        uploaded.style.display = 'flex';
+        const fileName = cvPath.split('/').pop();
+        document.getElementById('cvFileName').textContent = fileName;
+        document.getElementById('cvDownloadLink').href = '/' + cvPath;
+    } else {
+        dropArea.style.display = '';
+        uploaded.style.display = 'none';
+    }
+}
+
+// File input change
+const cvInput = document.getElementById('cvFileInput');
+if (cvInput) {
+    cvInput.addEventListener('change', function() {
+        if (this.files.length > 0) uploadCV(this.files[0]);
+    });
+}
+
+// Drag & drop
+const cvDrop = document.getElementById('cvDropArea');
+if (cvDrop) {
+    ['dragenter', 'dragover'].forEach(evt => {
+        cvDrop.addEventListener(evt, e => { e.preventDefault(); cvDrop.classList.add('drag-over'); });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+        cvDrop.addEventListener(evt, e => { e.preventDefault(); cvDrop.classList.remove('drag-over'); });
+    });
+    cvDrop.addEventListener('drop', e => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) uploadCV(files[0]);
+    });
+}
+
+function uploadCV(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['pdf', 'docx', 'doc'].includes(ext)) {
+        alert('Format file harus PDF, DOCX, atau DOC.');
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file maksimal 5 MB.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('cv', file);
+
+    fetch('/profil/upload-cv', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            renderCVState(data.path);
+            loadProfil(); // reload to update completion
+        } else {
+            alert(data.message || 'Gagal mengunggah CV.');
+        }
+    })
+    .catch(() => alert('Terjadi kesalahan. Coba lagi.'));
+}
+
+// ── Delete CV ──
+function deleteCV() {
+    if (!confirm('Hapus CV yang sudah diunggah?')) return;
+
+    fetch('/profil/delete-cv', {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': csrfToken }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            renderCVState(null);
+            loadProfil();
+        } else {
+            alert(data.message || 'Gagal menghapus CV.');
+        }
+    })
+    .catch(() => alert('Terjadi kesalahan. Coba lagi.'));
+}
+window.deleteCV = deleteCV;
+
+// ── Replace CV (file input change) ──
+const cvReplaceInput = document.getElementById('cvReplaceInput');
+if (cvReplaceInput) {
+    cvReplaceInput.addEventListener('change', function() {
+        if (this.files.length > 0) uploadCV(this.files[0]);
+        this.value = ''; // reset so same file can be picked again
+    });
+}
+
+// ══════════════════════════════════════════════════════════
+//  SKILLS MANAGEMENT
+// ══════════════════════════════════════════════════════════
+
+const levelLabel = { pemula: 'Pemula', menengah: 'Menengah', mahir: 'Mahir' };
+
+function renderSkills(skills) {
+    const el = document.getElementById('detailSkills');
+    if (!el) return;
+    if (skills && skills.length > 0) {
+        el.innerHTML = skills.map(s => `
+            <span class="skill-chip">
+                ${s.nama} · ${levelLabel[s.level] || s.level}
+                <button type="button" class="skill-remove" onclick="removeSkill(${s.skill_id})" title="Hapus skill">&times;</button>
+            </span>
+        `).join('');
+    } else {
+        el.innerHTML = '<span style="color:var(--text-3);font-size:13px">Belum ada skill yang ditambahkan.</span>';
+    }
+}
+
+function loadSkillsList() {
+    fetch('/profil/skills-list')
+        .then(r => r.json())
+        .then(data => {
+            if (data.status !== 'success') return;
+            const sel = document.getElementById('skillSelect');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Pilih skill...</option>';
+            let lastKat = '';
+            data.skills.forEach(s => {
+                if (s.kategori !== lastKat) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = s.kategori.charAt(0).toUpperCase() + s.kategori.slice(1);
+                    sel.appendChild(optgroup);
+                    lastKat = s.kategori;
+                }
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.nama;
+                // Append to last optgroup
+                const groups = sel.querySelectorAll('optgroup');
+                groups[groups.length - 1].appendChild(opt);
+            });
+        })
+        .catch(() => {});
+}
+
+function addSkill() {
+    const sel   = document.getElementById('skillSelect');
+    const level = document.getElementById('skillLevel');
+    if (!sel.value) {
+        showMsg('msg-skill', 'Pilih skill terlebih dahulu.', 'error');
+        return;
+    }
+    fetch('/profil/add-skill', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: `skill_id=${sel.value}&level=${level.value}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        showMsg('msg-skill', data.message, data.status === 'success' ? 'success' : 'error');
+        if (data.status === 'success') {
+            sel.value = '';
+            loadProfil();
+        }
+    })
+    .catch(() => showMsg('msg-skill', 'Terjadi kesalahan.', 'error'));
+}
+
+function removeSkill(skillId) {
+    if (!confirm('Hapus skill ini?')) return;
+    fetch(`/profil/remove-skill/${skillId}`, {
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': csrfToken }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') loadProfil();
+    })
+    .catch(() => alert('Terjadi kesalahan.'));
+}
+
+// ══════════════════════════════════════════════════════════
+//  EMAIL VERIFICATION
+// ══════════════════════════════════════════════════════════
+
+function verifyEmail() {
+    const btn = document.getElementById('btnVerifyEmail');
+    btn.disabled = true;
+    btn.textContent = 'Memverifikasi...';
+
+    fetch('/profil/verify-email', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            loadProfil();
+        } else {
+            alert(data.message || 'Gagal memverifikasi email.');
+            btn.disabled = false;
+            btn.textContent = 'Verifikasi Email';
+        }
+    })
+    .catch(() => {
+        alert('Terjadi kesalahan.');
+        btn.disabled = false;
+        btn.textContent = 'Verifikasi Email';
+    });
+}
+
+// ══════════════════════════════════════════════════════════
+//  PHOTO UPLOAD
+// ══════════════════════════════════════════════════════════
+
+const avatarWrap = document.getElementById('avatarWrap');
+const photoInput = document.getElementById('photoFileInput');
+
+if (avatarWrap && photoInput) {
+    avatarWrap.addEventListener('click', () => photoInput.click());
+    photoInput.addEventListener('change', function() {
+        if (this.files.length > 0) uploadPhoto(this.files[0]);
+    });
+}
+
+function uploadPhoto(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+        alert('Format file harus JPG, PNG, atau WEBP.');
+        return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+        alert('Ukuran file maksimal 3 MB.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('foto', file);
+
+    fetch('/profil/upload-photo', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            loadProfil();
+        } else {
+            alert(data.message || 'Gagal mengunggah foto.');
+        }
+    })
+    .catch(() => alert('Terjadi kesalahan. Coba lagi.'));
+}

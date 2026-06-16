@@ -100,6 +100,7 @@ function openJobModal(mode, jobData) {
         form.nama_perusahaan.value = jobData.nama_perusahaan || '';
         form.lokasi.value = jobData.lokasi || '';
         form.tipe.value = jobData.tipe || 'full-time';
+        form.kategori.value = jobData.kategori || 'teknologi';
         form.deskripsi.value = jobData.deskripsi || '';
         form.requirement.value = jobData.requirement || '';
         form.gaji_min.value = jobData.gaji_min || '';

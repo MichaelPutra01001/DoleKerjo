@@ -41,7 +41,10 @@
 
 <section class="hero">
     <div class="container">
-        <h2 class="reveal">Mulai Kariermu dengan Tepat 🎯</h2>
+        <h2 class="reveal">
+            Mulai Kariermu dengan Tepat
+            <svg style="display:inline-block;vertical-align:middle;margin-left:6px" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </h2>
         <p class="reveal">GradMatch membantu fresh graduate menemukan pekerjaan yang sesuai dengan skill dan kompetensi mereka.</p>
         <a href="/matching" class="btn-primary reveal">Coba Skill Matching</a>
     </div>
@@ -52,15 +55,24 @@
         <h2 class="reveal">Kenapa GradMatch?</h2>
         <div class="cards">
             <div class="card reveal">
-                <h3>🎯 Matching Berbasis Skill</h3>
+                <h3>
+                    <svg style="display:inline-block;vertical-align:-2px;margin-right:4px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    Matching Berbasis Skill
+                </h3>
                 <p>Sistem kami mencocokkan CV dengan kebutuhan industri secara otomatis.</p>
             </div>
             <div class="card reveal">
-                <h3>🏢 Insight Perusahaan</h3>
+                <h3>
+                    <svg style="display:inline-block;vertical-align:-2px;margin-right:4px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    Insight Perusahaan
+                </h3>
                 <p>Lihat review dan budaya kerja sebelum melamar.</p>
             </div>
             <div class="card reveal">
-                <h3>📊 Rekomendasi Karier</h3>
+                <h3>
+                    <svg style="display:inline-block;vertical-align:-2px;margin-right:4px" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    Rekomendasi Karier
+                </h3>
                 <p>Dapatkan saran karier berdasarkan kompetensimu.</p>
             </div>
         </div>
@@ -71,16 +83,16 @@
     <div class="container stats-grid">
         <div class="stats-text">
             <div class="stat-box reveal">
-                <h3 data-target="500">0</h3>
+                <h3 data-target="{{ $totalCompanies }}">0</h3>
                 <p>Perusahaan Terdaftar</p>
             </div>
             <div class="stat-box reveal">
-                <h3 data-target="10000">0</h3>
+                <h3 data-target="{{ $totalUsers }}">0</h3>
                 <p>Fresh Graduate Terbantu</p>
             </div>
             <div class="stat-box reveal">
-                <h3 data-target="85">0</h3>
-                <p>Tingkat Kesesuaian Pekerjaan (%)</p>
+                <h3 data-target="{{ $totalJobs }}">0</h3>
+                <p>Lowongan Aktif</p>
             </div>
         </div>
         <div class="stats-visual reveal">
@@ -92,20 +104,17 @@
 <section class="jobs-preview">
     <div class="container">
         <h2 class="reveal">Lowongan Terbaru</h2>
-        <div class="job-card reveal">
+        @forelse($recentJobs as $rj)
+        <a href="{{ route('jobs.show', $rj->id) }}" class="job-card reveal" style="text-decoration:none;color:inherit">
             <div>
-                <h3>Frontend Developer</h3>
-                <p>PT Digital Nusantara</p>
+                <h3>{{ $rj->nama_posisi }}</h3>
+                <p>{{ $rj->nama_perusahaan }} &middot; {{ $rj->lokasi ?? '-' }}</p>
             </div>
-            <span class="tag">Remote</span>
-        </div>
-        <div class="job-card reveal">
-            <div>
-                <h3>Data Analyst</h3>
-                <p>Startup Insight Indonesia</p>
-            </div>
-            <span class="tag">Full-time</span>
-        </div>
+            <span class="tag">{{ $rj->tipe_label }}</span>
+        </a>
+        @empty
+        <p class="reveal" style="color:var(--text-3);font-size:14px">Belum ada lowongan tersedia.</p>
+        @endforelse
         <div style="text-align:center">
             <a href="/jobs" class="btn-primary reveal">Lihat Semua Lowongan</a>
         </div>
@@ -115,14 +124,14 @@
 <section class="reviews">
     <div class="container">
         <h2 class="reveal">Review Perusahaan</h2>
+        @forelse($recentReviews as $rev)
         <div class="review-card reveal">
-            <p>"Lingkungan kerja yang suportif dan banyak peluang belajar."</p>
-            <strong>— Karyawan, PT Digital Nusantara</strong>
+            <p>"{{ $rev->isi_review }}"</p>
+            <strong>— {{ $rev->reviewer ?? 'Anonim' }}, {{ $rev->nama_perusahaan }}</strong>
         </div>
-        <div class="review-card reveal">
-            <p>"Work-life balance sangat baik dan tim kolaboratif."</p>
-            <strong>— Data Analyst, Insight Indonesia</strong>
-        </div>
+        @empty
+        <p class="reveal" style="color:var(--text-3);font-size:14px">Belum ada review perusahaan.</p>
+        @endforelse
     </div>
 </section>
 

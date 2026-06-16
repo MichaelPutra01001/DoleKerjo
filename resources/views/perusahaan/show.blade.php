@@ -157,7 +157,9 @@
 <!-- ── Modal Detail Job ── -->
 <div id="modalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;">
     <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:32px;max-width:520px;width:90%;max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 20px 48px rgba(0,0,0,.15);color:var(--text);">
-        <button onclick="tutupModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3);line-height:1;">✕</button>
+        <button onclick="tutupModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-3);line-height:1;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;" aria-label="Tutup">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
         <h3 id="modalPosisi" style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;margin-bottom:4px;color:var(--text);padding-right:40px"></h3>
         <p id="modalPerusahaan" style="font-size:13.5px;color:var(--text-3);margin-bottom:20px"></p>
         <div id="modalBody" style="font-size:14px;color:var(--text-2);line-height:1.8"></div>

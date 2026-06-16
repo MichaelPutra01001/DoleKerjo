@@ -1,3 +1,7 @@
+/* ============================================================
+   jobs.js - GradMatch Job Listing & Detail Pages
+   ============================================================ */
+
 // ── Scroll Reveal ──
 const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
@@ -9,52 +13,103 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// ── Modal Detail Job ──
-const overlay = document.getElementById('modalOverlay');
-
-function lihatDetail(jobId) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    fetch(`/jobs/${jobId}`, {
-        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(job => {
-        document.getElementById('modalPosisi').textContent     = job.nama_posisi;
-        document.getElementById('modalPerusahaan').textContent = `${job.nama_perusahaan} · ${job.lokasi ?? '-'}`;
-
-        const gaji = job.gaji_min
-            ? `Rp ${Number(job.gaji_min).toLocaleString('id-ID')} – Rp ${Number(job.gaji_max).toLocaleString('id-ID')}`
-            : 'Tidak disebutkan';
-
-        document.getElementById('modalBody').innerHTML = `
-            <p><strong>Tipe:</strong> ${job.tipe}</p>
-            <p><strong>Gaji:</strong> ${gaji}</p>
-            <hr style="margin:12px 0;border:none;border-top:1px solid var(--border)">
-            <p><strong>Deskripsi:</strong></p>
-            <p style="margin-top:6px">${job.deskripsi ?? '-'}</p>
-            <p style="margin-top:12px"><strong>Requirements:</strong></p>
-            <p style="margin-top:6px">${job.requirement ?? '-'}</p>
-        `;
-
-        overlay.style.display = 'flex';
-    })
-    .catch(() => alert('Gagal memuat detail lowongan.'));
+// ── Toast notification ──
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.className = 'toast show ' + type;
+    setTimeout(() => { toast.className = 'toast'; }, 3000);
 }
 
-function tutupModal() {
-    overlay.style.display = 'none';
+// ── CSRF token ──
+function csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
 }
 
-// ── Event listener untuk tombol Lihat Detail ──
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('btn-detail')) {
-        const jobId = e.target.getAttribute('data-id');
-        lihatDetail(jobId);
-    }
+// ══════════════════════════════════════════════════════════
+//  LISTING PAGE — Filter & Quick Apply
+// ══════════════════════════════════════════════════════════
+
+// ── Auto-submit filter on change ──
+document.querySelectorAll('#filterForm input').forEach(input => {
+    input.addEventListener('change', () => {
+        document.getElementById('filterForm').submit();
+    });
 });
 
-// ── Tutup modal kalau klik di luar ──
-overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) tutupModal();
+// ── Show more / Show less toggle for filter groups ──
+function toggleShowMore(listId) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    list.classList.toggle('expanded');
+}
+
+// ── Reset filter ──
+function resetFilter() {
+    const form = document.getElementById('filterForm');
+    if (!form) return;
+    form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    form.querySelectorAll('input[type="radio"]').forEach(r => {
+        r.checked = r.value === 'terbaru';
+    });
+    form.submit();
+}
+
+// ── Mobile filter toggle ──
+function toggleFilterMobile() {
+    const sidebar = document.getElementById('filterSidebar');
+    if (sidebar) sidebar.classList.toggle('open');
+}
+
+// ── Quick Apply (Daftar Cepat) on listing page ──
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-daftar-cepat');
+    if (!btn || btn.disabled) return;
+
+    const jobId = btn.getAttribute('data-job-id');
+    if (!jobId) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> Mengirim...';
+
+    fetch('/perusahaan/apply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRF-TOKEN': csrfToken()
+        },
+        body: 'job_id=' + jobId
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Sudah Dilamar';
+            btn.classList.add('applied');
+            showToast('Lamaran berhasil dikirim!');
+        } else {
+            if (data.error && data.error.includes('sudah')) {
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Sudah Dilamar';
+                btn.classList.add('applied');
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Daftar Cepat';
+                showToast(data.error || 'Gagal mengirim lamaran', 'error');
+            }
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.textContent = 'Daftar Cepat';
+        showToast('Terjadi kesalahan. Coba lagi.', 'error');
+    });
+});
+
+// ── Close mobile filter on outside click ──
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('filterSidebar');
+    if (!sidebar || !sidebar.classList.contains('open')) return;
+    if (!sidebar.contains(e.target) && !document.getElementById('filterToggle')?.contains(e.target)) {
+        sidebar.classList.remove('open');
+    }
 });

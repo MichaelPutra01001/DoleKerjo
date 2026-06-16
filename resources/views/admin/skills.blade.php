@@ -74,6 +74,37 @@
             <div class="alert error">{{ session('error') }}</div>
         @endif
 
+        <!-- ── Add Kategori Form ── -->
+        <div class="card reveal">
+            <h2>Kategori Lowongan</h2>
+            <p style="font-size:13px;color:var(--text-3);margin-bottom:16px;">Kelola kategori yang muncul di filter job listing dan form posting lowongan.</p>
+            <form action="{{ route('admin.kategori.add') }}" method="POST" style="display:flex;gap:10px;align-items:flex-end;margin-bottom:18px;">
+                @csrf
+                <div class="form-group" style="flex:1">
+                    <label>Nama Kategori</label>
+                    <input type="text" name="nama" placeholder="Contoh: Pertanian" required>
+                </div>
+                <button type="submit" class="btn-primary" style="height:38px;align-self:flex-end;">Tambah Kategori</button>
+            </form>
+            @if(count($kategoriList) > 0)
+                <div class="skill-chips">
+                    @foreach($kategoriList as $kat)
+                        <span class="skill-chip">
+                            {{ $kat->nama }}
+                            <small style="opacity:.6;margin-left:2px;">({{ $kat->job_count }})</small>
+                            <form id="del-kat-{{ $kat->id }}" action="{{ route('admin.kategori.delete', $kat->id) }}" method="POST" style="display:inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" class="chip-del" onclick="confirmDelete('del-kat-{{ $kat->id }}')" title="Hapus kategori {{ $kat->nama }}">&times;</button>
+                            </form>
+                        </span>
+                    @endforeach
+                </div>
+            @else
+                <p class="empty-state">Belum ada kategori.</p>
+            @endif
+        </div>
+
         <!-- ── Add Skill Form ── -->
         <div class="card reveal">
             <h2>Tambah Skill Baru</h2>
@@ -87,16 +118,9 @@
                     <div class="form-group" style="min-width:160px">
                         <label>Kategori</label>
                         <select name="kategori" required>
-                            <option value="teknologi">Teknologi & IT</option>
-                            <option value="desain">Desain & Kreatif</option>
-                            <option value="marketing">Marketing & Komunikasi</option>
-                            <option value="keuangan">Keuangan & Akuntansi</option>
-                            <option value="manajemen">Manajemen & Bisnis</option>
-                            <option value="kesehatan">Kesehatan & Medis</option>
-                            <option value="pendidikan">Pendidikan & Pelatihan</option>
-                            <option value="teknik">Teknik & Engineering</option>
-                            <option value="hukum">Hukum & Legal</option>
-                            <option value="lainnya">Lainnya</option>
+                            @foreach($kategoriList as $kat)
+                                <option value="{{ $kat->nama }}">{{ $kat->nama }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <button type="submit" class="btn-primary" style="height:38px;align-self:flex-end;">Tambah</button>
@@ -109,24 +133,10 @@
             <h2>Daftar Skills ({{ $totalSkills }})</h2>
 
             @if ($totalSkills > 0)
-                @php
-                    $labels = [
-                        'teknologi'  => 'Teknologi & IT',
-                        'desain'     => 'Desain & Kreatif',
-                        'marketing'  => 'Marketing & Komunikasi',
-                        'keuangan'   => 'Keuangan & Akuntansi',
-                        'manajemen'  => 'Manajemen & Bisnis',
-                        'kesehatan'  => 'Kesehatan & Medis',
-                        'pendidikan' => 'Pendidikan & Pelatihan',
-                        'teknik'     => 'Teknik & Engineering',
-                        'hukum'      => 'Hukum & Legal',
-                        'lainnya'    => 'Lainnya',
-                    ];
-                @endphp
                 <div class="skill-groups">
                     @foreach ($grouped as $kat => $items)
                         <div class="skill-group">
-                            <h3 class="skill-group-title">{{ $labels[$kat] ?? ucfirst($kat) }} <span>({{ count($items) }})</span></h3>
+                            <h3 class="skill-group-title">{{ ucfirst($kat) }} <span>({{ count($items) }})</span></h3>
                             <div class="skill-chips">
                                 @foreach ($items as $skill)
                                     <span class="skill-chip">

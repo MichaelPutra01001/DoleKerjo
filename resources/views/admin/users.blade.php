@@ -158,6 +158,14 @@
                                             @else
                                                 <span class="badge pending">Pending</span>
                                             @endif
+                                        @elseif ($u->role === 'user')
+                                            @if ($u->email_verified == 1)
+                                                <span class="badge verified">Email Terverifikasi</span>
+                                            @elseif ($u->email_verified == 2)
+                                                <span class="badge pending">Email Pending</span>
+                                            @else
+                                                <span style="font-size:12px;color:var(--text-3);">—</span>
+                                            @endif
                                         @else
                                             <span style="font-size:12px;color:var(--text-3);">—</span>
                                         @endif
@@ -172,6 +180,12 @@
                                                     <button type="submit" class="btn-sm btn-verify">Verifikasi</button>
                                                 </form>
                                             @endif
+                                        @endif
+                                        @if ($u->role === 'user' && $u->email_verified == 2)
+                                            <form action="{{ route('admin.users.verifyEmail', $u->id) }}" method="POST" style="display:inline">
+                                                @csrf
+                                                <button type="submit" class="btn-sm btn-verify">Verifikasi Email</button>
+                                            </form>
                                         @endif
                                         @if ($u->id != session('user_id'))
                                             <form id="del-user-{{ $u->id }}" action="{{ route('admin.users.delete', $u->id) }}" method="POST" style="display:inline">

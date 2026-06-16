@@ -107,11 +107,9 @@
                 <div class="stars">
                     @for($i = 1; $i <= 5; $i++)
                         @if($avg >= $i)
-                            <span class="star filled">★</span>
-                        @elseif($avg >= $i - 0.5)
-                            <span class="star half">★</span>
+                            <span class="star filled"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
                         @else
-                            <span class="star">★</span>
+                            <span class="star"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
                         @endif
                     @endfor
                 </div>
@@ -136,7 +134,9 @@
             @endif
             @if($p->website)
             <div class="stat-item">
-                <span class="val" style="font-size:13px">🌐</span>
+                <span class="val" style="font-size:13px">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                </span>
                 <span class="lbl">Website</span>
             </div>
             @endif

@@ -1,3 +1,5 @@
+// ─── Hasil JS ──────────────────────────────────────────────────────────
+
 // Scroll reveal
 const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
@@ -21,22 +23,26 @@ function countUp(el, target, suffix, duration) {
     requestAnimationFrame(step);
 }
 
-const scoreObserver = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-        if (e.isIntersecting) {
-            countUp(document.getElementById('scoreNum'), 82, '%', 1400);
-            scoreObserver.unobserve(e.target);
-        }
-    });
-}, { threshold: 0.3 });
-scoreObserver.observe(document.querySelector('.highlight'));
+const scoreEl = document.querySelector('.score');
+if (scoreEl) {
+    const target = parseInt(scoreEl.dataset.target) || 0;
+    const scoreObserver = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                countUp(scoreEl, target, '%', 1400);
+                scoreObserver.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.3 });
+    scoreObserver.observe(scoreEl.closest('.highlight') || scoreEl);
+}
 
 // Skill bar animation
 const barObserver = new IntersectionObserver(entries => {
     entries.forEach(e => {
         if (e.isIntersecting) {
             e.target.querySelectorAll('.fill').forEach(fill => {
-                fill.style.width = fill.dataset.width + '%';
+                fill.style.width = (fill.dataset.width || 0) + '%';
             });
             barObserver.unobserve(e.target);
         }

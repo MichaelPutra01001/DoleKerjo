@@ -28,10 +28,19 @@ Route::get('/profil/data', [ProfilController::class, 'getData']);
 Route::post('/profil/update-info', [ProfilController::class, 'updateInfo']);
 Route::post('/profil/update-password', [ProfilController::class, 'updatePassword']);
 Route::post('/profil/hapus', [ProfilController::class, 'hapusAkun']);
+Route::post('/profil/upload-cv', [ProfilController::class, 'uploadCV'])->name('profil.uploadCV');
+Route::delete('/profil/delete-cv', [ProfilController::class, 'deleteCV'])->name('profil.deleteCV');
+Route::post('/profil/upload-photo', [ProfilController::class, 'uploadPhoto'])->name('profil.uploadPhoto');
+Route::post('/profil/upload-portfolio', [ProfilController::class, 'uploadPortfolio'])->name('profil.uploadPortfolio');
+Route::get('/profil/skills-list', [ProfilController::class, 'skillsList']);
+Route::post('/profil/add-skill', [ProfilController::class, 'addSkill'])->name('profil.addSkill');
+Route::delete('/profil/remove-skill/{skillId}', [ProfilController::class, 'removeSkill'])->name('profil.removeSkill');
+Route::post('/profil/verify-email', [ProfilController::class, 'verifyEmail'])->name('profil.verifyEmail');
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs');
-Route::get('/jobs/{id}', [JobController::class, 'show']);
+Route::get('/jobs/{id}', [JobController::class, 'show'])->name('jobs.show');
+Route::get('/jobs/{id}/data', [JobController::class, 'data']);
 Route::get('/matching', [MatchingController::class, 'index'])->name('matching');
-Route::get('/hasil', [MatchingController::class, 'hasil'])->name('hasil');
+Route::post('/hasil', [MatchingController::class, 'hasil'])->name('hasil');
 
 // Perusahaan
 Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan');
@@ -55,10 +64,13 @@ Route::prefix('admin')->group(function () {
     Route::get('/users',     [AdminController::class, 'users'])->name('admin.users');
     Route::get('/recruiter/{id}', [AdminController::class, 'recruiterDetail'])->name('admin.recruiter.detail');
     Route::post('/users/{id}/verify', [AdminController::class, 'verifyRecruiter'])->name('admin.users.verify');
+    Route::post('/users/{id}/verify-email', [AdminController::class, 'verifyUserEmail'])->name('admin.users.verifyEmail');
     Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
     Route::get('/skills',    [AdminController::class, 'skills'])->name('admin.skills');
     Route::post('/skills',   [AdminController::class, 'addSkill'])->name('admin.skills.add');
     Route::delete('/skills/{id}', [AdminController::class, 'deleteSkill'])->name('admin.skills.delete');
+    Route::post('/kategori', [AdminController::class, 'addKategori'])->name('admin.kategori.add');
+    Route::delete('/kategori/{id}', [AdminController::class, 'deleteKategori'])->name('admin.kategori.delete');
 });
 
 // ─── Recruiter Routes ──────────────────────────────────────────────

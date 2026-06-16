@@ -6,7 +6,6 @@
     <title>Hasil Skill Matching - GradMatch</title>
     <link rel="stylesheet" href="{{ asset('css/hasil.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
             const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -39,55 +38,92 @@
 </nav>
 
 <div class="container">
-    <h1>Hasil Analisis CV Kamu</h1>
-    <p class="subtitle">Berdasarkan data CV yang kamu unggah</p>
+    <h1>Hasil Analisis Skill Kamu</h1>
+    <p class="subtitle">Berdasarkan {{ $totalSkills }} skill yang dicocokkan dengan lowongan</p>
 
+    <!-- Score card -->
     <div class="card highlight reveal">
         <h2>Ringkasan Kecocokan</h2>
-        <div class="score" id="scoreNum">0%</div>
-        <p>Kamu memiliki kecocokan tinggi dengan bidang <strong>Web Development</strong>.</p>
+        <div class="score" data-target="{{ $matchScore }}">0%</div>
+        @if($matchScore >= 60)
+            <p>Kamu memiliki kecocokan tinggi dengan lowongan yang tersedia.</p>
+        @elseif($matchScore >= 30)
+            <p>Kamu memiliki kecocokan sedang. Tambahkan lebih banyak skill untuk hasil lebih baik.</p>
+        @else
+            <p>Kecocokan masih rendah. Coba tambahkan skill yang lebih spesifik atau update profil kamu.</p>
+        @endif
     </div>
 
+    <!-- Skill analysis bars -->
+    @if(!empty($skillAnalysis))
     <div class="card reveal">
         <h2>Analisis Skill</h2>
-        <div class="skill"><span>HTML & CSS</span><div class="bar"><div class="fill" data-width="95"></div></div></div>
-        <div class="skill"><span>JavaScript</span><div class="bar"><div class="fill" data-width="75"></div></div></div>
-        <div class="skill"><span>UI/UX Design</span><div class="bar"><div class="fill" data-width="70"></div></div></div>
-        <div class="skill"><span>Backend Development</span><div class="bar"><div class="fill" data-width="55"></div></div></div>
+        @foreach($skillAnalysis as $sa)
+        <div class="skill">
+            <span title="{{ $sa['kategori'] ?? 'Lainnya' }}">{{ $sa['name'] }}</span>
+            <div class="bar">
+                <div class="fill" data-width="{{ $sa['strength'] }}"></div>
+            </div>
+        </div>
+        @endforeach
     </div>
+    @endif
 
+    <!-- Strengths & Weaknesses -->
     <div class="grid-2 reveal">
         <div class="card">
             <h2>Kelebihan</h2>
             <ul>
-                <li>Struktur HTML rapi & terstruktur</li>
-                <li>Memahami responsive design</li>
-                <li>Portofolio frontend cukup kuat</li>
+                @foreach($strengths as $s)
+                <li>{{ $s }}</li>
+                @endforeach
             </ul>
         </div>
         <div class="card">
             <h2>Perlu Ditingkatkan</h2>
             <ul>
-                <li>Pengalaman backend masih terbatas</li>
-                <li>Belum familiar dengan framework modern</li>
-                <li>Kurang pengalaman kerja tim (Git workflow)</li>
+                @foreach($weaknesses as $w)
+                <li>{{ $w }}</li>
+                @endforeach
             </ul>
         </div>
     </div>
 
+    <!-- Job recommendations -->
     <div class="card reveal">
         <h2>Rekomendasi Pekerjaan</h2>
-        <div class="job-card"><div><h3>Frontend Developer</h3><p>PT Digital Nusantara</p></div><span class="badge">Match 90%</span></div>
-        <div class="job-card"><div><h3>UI Designer</h3><p>Creative Studio ID</p></div><span class="badge">Match 85%</span></div>
-        <div class="job-card"><div><h3>Junior Web Developer</h3><p>Startup Teknologi Maju</p></div><span class="badge">Match 80%</span></div>
+        @forelse($matchedJobs as $job)
+        <a href="{{ route('jobs.show', $job['id']) }}" class="job-card-link">
+            <div class="job-card">
+                <div>
+                    <h3>{{ $job['nama_posisi'] }}</h3>
+                    <p>{{ $job['nama_perusahaan'] }} &middot; {{ $job['lokasi'] }}</p>
+                    <div class="matched-tags">
+                        @foreach(array_slice($job['matched_skills'], 0, 4) as $ms)
+                            <span class="match-tag">{{ $ms }}</span>
+                        @endforeach
+                    </div>
+                </div>
+                <span class="badge">Match {{ $job['match_percent'] }}%</span>
+            </div>
+        </a>
+        @empty
+        <div class="no-results">
+            <p>Tidak ada lowongan yang cocok dengan skill kamu saat ini.</p>
+            <p class="no-results-hint">Coba tambahkan skill lain atau perbarui profil kamu.</p>
+        </div>
+        @endforelse
     </div>
 
     <div style="text-align:center; margin-top:16px">
-        <a href="/matching" class="btn-back">← Analisis Ulang</a>
+        <a href="/matching" class="btn-back">
+            <svg style="display:inline-block;vertical-align:-3px;margin-right:4px" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Analisis Ulang
+        </a>
     </div>
 </div>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>&copy; 2026 GradMatch</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/hasil.js') }}"></script>

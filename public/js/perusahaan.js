@@ -20,17 +20,30 @@ function formatRupiah(n) {
     return 'Rp ' + n;
 }
 
+// Inline SVG icons
+const ICO = {
+    globe:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+    pin:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    user:    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    brief:   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    warn:    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    doc:     '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    chat:    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    clip:    '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+    link:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    pinSm:   '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    money:   '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+    users:   '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    starF:   '<svg class="star filled" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    starE:   '<svg class="star" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    starPk:  '<svg class="star-pick" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+};
+
 // Render bintang
 function renderStars(rating) {
     let html = '<span class="stars">';
     for (let i = 1; i <= 5; i++) {
-        if (rating >= i) {
-            html += '<span class="star filled">&#9733;</span>';
-        } else if (rating >= i - 0.5) {
-            html += '<span class="star half">&#9733;</span>';
-        } else {
-            html += '<span class="star">&#9733;</span>';
-        }
+        html += rating >= i ? ICO.starF : ICO.starE;
     }
     html += '</span>';
     return html;
@@ -139,7 +152,7 @@ function loadTab(tab) {
         .catch(() => {
             panel.innerHTML = `
             <div class="no-data">
-                <div class="icon">&#9888;&#65039;</div>
+                <div class="icon">${ICO.warn}</div>
                 <p>Gagal memuat data. Coba refresh halaman.</p>
             </div>`;
         });
@@ -165,13 +178,19 @@ function renderOverview(data, panel) {
 
     let html = `<div class="overview-grid">`;
 
+    // Update tab counts from overview data
+    const reviewBadge = document.querySelector('[data-tab="reviews"] .tab-count');
+    if (reviewBadge) reviewBadge.textContent = total;
+    const lamaranBadge = document.querySelector('[data-tab="lamaran"] .tab-count');
+    if (lamaranBadge) lamaranBadge.textContent = totalJobs;
+
     // Left: info umum
     html += `
     <div class="info-card reveal visible">
         <h3>Informasi Umum</h3>
         <div class="info-list">
             <div class="info-row">
-                <div class="ico">&#127760;</div>
+                <div class="ico">${ICO.globe}</div>
                 <div class="txt">
                     <div class="lbl">Website</div>
                     <div class="val">${p.website
@@ -181,21 +200,21 @@ function renderOverview(data, panel) {
                 </div>
             </div>
             <div class="info-row">
-                <div class="ico">&#128205;</div>
+                <div class="ico">${ICO.pin}</div>
                 <div class="txt">
                     <div class="lbl">Lokasi</div>
                     <div class="val">${p.lokasi || '-'}</div>
                 </div>
             </div>
             <div class="info-row">
-                <div class="ico">&#128100;</div>
+                <div class="ico">${ICO.user}</div>
                 <div class="txt">
                     <div class="lbl">Recruiter</div>
                     <div class="val">${p.recruiter_nama || '-'}</div>
                 </div>
             </div>
             <div class="info-row">
-                <div class="ico">&#128188;</div>
+                <div class="ico">${ICO.brief}</div>
                 <div class="txt">
                     <div class="lbl">Lowongan Aktif</div>
                     <div class="val">${totalJobs} posisi</div>
@@ -227,7 +246,7 @@ function renderOverview(data, panel) {
             </div>
         </div>`;
     } else {
-        html += `<div class="no-data" style="padding:24px 0"><div class="icon" style="font-size:2rem">&#128221;</div><p>Belum ada review</p></div>`;
+        html += `<div class="no-data" style="padding:24px 0"><div class="icon">${ICO.doc}</div><p>Belum ada review</p></div>`;
     }
     html += `</div></div>`;
 
@@ -279,11 +298,11 @@ function renderReviews(data, panel) {
             <p class="review-form-sub">Bagikan pengalaman Anda tentang perusahaan ini</p>
             <form id="reviewForm" onsubmit="submitReview(event)">
                 <div class="star-picker" id="starPicker">
-                    <span class="star-pick" data-val="1" onclick="setRating(1)">&#9733;</span>
-                    <span class="star-pick" data-val="2" onclick="setRating(2)">&#9733;</span>
-                    <span class="star-pick" data-val="3" onclick="setRating(3)">&#9733;</span>
-                    <span class="star-pick" data-val="4" onclick="setRating(4)">&#9733;</span>
-                    <span class="star-pick" data-val="5" onclick="setRating(5)">&#9733;</span>
+                    <span class="star-pick" data-val="1" onclick="setRating(1)">${ICO.starPk}</span>
+                    <span class="star-pick" data-val="2" onclick="setRating(2)">${ICO.starPk}</span>
+                    <span class="star-pick" data-val="3" onclick="setRating(3)">${ICO.starPk}</span>
+                    <span class="star-pick" data-val="4" onclick="setRating(4)">${ICO.starPk}</span>
+                    <span class="star-pick" data-val="5" onclick="setRating(5)">${ICO.starPk}</span>
                     <span class="rating-label" id="ratingLabel">Pilih rating</span>
                 </div>
                 <input type="hidden" id="ratingValue" name="rating" value="0">
@@ -302,7 +321,7 @@ function renderReviews(data, panel) {
     }
 
     if (!data || data.length === 0) {
-        html += '<div class="no-data"><div class="icon">&#128172;</div><p>Belum ada review untuk perusahaan ini.</p></div>';
+        html += '<div class="no-data"><div class="icon">' + ICO.chat + '</div><p>Belum ada review untuk perusahaan ini.</p></div>';
     } else {
         html += '<div class="reviews-list">';
         data.forEach(r => {
@@ -413,7 +432,7 @@ function renderLamaran(data, panel) {
     const role = data.role;
 
     if (jobs.length === 0) {
-        panel.innerHTML = '<div class="no-data"><div class="icon">&#128203;</div><p>Tidak ada lowongan dari perusahaan ini.</p></div>';
+        panel.innerHTML = '<div class="no-data"><div class="icon">' + ICO.clip + '</div><p>Tidak ada lowongan dari perusahaan ini.</p></div>';
         return;
     }
 
@@ -449,13 +468,13 @@ function renderLamaran(data, panel) {
                 <h4>${j.nama_posisi}</h4>
                 <div class="meta">
                     <span class="tipe-badge ${tp.cls}">${tp.label}</span>
-                    ${j.lokasi ? `<span>&#128205; ${j.lokasi}</span>` : ''}
-                    ${gajiStr ? `<span class="gaji-range">&#128176; ${gajiStr}</span>` : ''}
+                    ${j.lokasi ? `<span>${ICO.pinSm} ${j.lokasi}</span>` : ''}
+                    ${gajiStr ? `<span class="gaji-range">${ICO.money} ${gajiStr}</span>` : ''}
                 </div>
             </div>
             <div class="job-right">
                 ${role !== 'user'
-                    ? `<span class="applicant-count">&#128101; ${j.total_lamaran || 0} pelamar</span>`
+                    ? `<span class="applicant-count">${ICO.users} ${j.total_lamaran || 0} pelamar</span>`
                     : ''}
                 <button class="btn-detail-job" onclick="lihatDetailJob(${j.id})">Detail</button>
                 ${applyHTML}
@@ -507,7 +526,7 @@ function renderConnections(data, panel) {
     if (data.note === 'table_not_ready') {
         panel.innerHTML = `
         <div class="no-data">
-            <div class="icon">&#128279;</div>
+            <div class="icon">${ICO.link}</div>
             <p>Fitur koneksi belum aktif.<br>
             <small style="font-size:12px;color:var(--text-3)">Import SQL tabel perusahaan_connections terlebih dahulu.</small></p>
         </div>`;
@@ -515,7 +534,7 @@ function renderConnections(data, panel) {
     }
 
     if (conns.length === 0) {
-        panel.innerHTML = '<div class="no-data"><div class="icon">&#128279;</div><p>Belum ada koneksi perusahaan yang terdaftar.</p></div>';
+        panel.innerHTML = '<div class="no-data"><div class="icon">' + ICO.link + '</div><p>Belum ada koneksi perusahaan yang terdaftar.</p></div>';
         return;
     }
 
@@ -533,8 +552,8 @@ function renderConnections(data, panel) {
             ${logoHTML}${placeholderHTML}
             <div class="conn-info">
                 <h4>${c.connected_nama}</h4>
-                <div class="tipe-tag">&#128279; ${c.tipe || 'Partner'}</div>
-                ${c.connected_lokasi ? `<div class="lokasi-tag">&#128205; ${c.connected_lokasi}</div>` : ''}
+                <div class="tipe-tag">${ICO.link} ${c.tipe || 'Partner'}</div>
+                ${c.connected_lokasi ? `<div class="lokasi-tag">${ICO.pinSm} ${c.connected_lokasi}</div>` : ''}
             </div>
         </a>`;
     });
@@ -553,7 +572,7 @@ function switchTab(tabName) {
 
 /* ---------- Modal Detail Job ---------- */
 function lihatDetailJob(id) {
-    fetch('/jobs/' + id)
+    fetch('/jobs/' + id + '/data')
         .then(r => r.json())
         .then(job => {
             const overlay = document.getElementById('modalOverlay');

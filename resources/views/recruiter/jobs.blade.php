@@ -196,6 +196,14 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>Kategori *</label>
+                <select name="kategori" required>
+                    @foreach($kategoriList as $kat)
+                        <option value="{{ $kat->nama }}">{{ $kat->nama }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="form-row">
                 <div class="form-group">
                     <label>Gaji Min</label>

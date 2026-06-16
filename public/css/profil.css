@@ -74,10 +74,27 @@ ul { list-style: none; }
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 24px;
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 32px auto;
   padding: 0 24px;
   align-items: start;
+}
+
+/* ── Detail Grid (content + aside) ── */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 20px;
+  align-items: start;
+}
+.detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.detail-aside {
+  position: sticky;
+  top: calc(var(--nav-h) + 20px);
 }
 
 /* ── Sidebar ── */
@@ -96,9 +113,28 @@ ul { list-style: none; }
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 2rem;
-  margin: 0 auto 12px;
   border: 2px solid var(--border);
 }
+
+/* Avatar with photo upload overlay */
+.avatar-wrap {
+  position: relative;
+  width: 72px;
+  margin: 0 auto 12px;
+  cursor: pointer;
+}
+.avatar-wrap .avatar { margin: 0; }
+.avatar-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0,0,0,.4);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition);
+  color: #fff;
+}
+.avatar-wrap:hover .avatar-overlay { opacity: 1; }
 .sidebar h3 {
   font-family: 'Fraunces', serif;
   font-size: 1.05rem;
@@ -171,7 +207,7 @@ ul { list-style: none; }
 }
 
 /* ── Skills ── */
-.skills { display: flex; flex-wrap: wrap; gap: 8px; }
+.skills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .skills span {
   font-size: 13px;
   font-weight: 500;
@@ -181,6 +217,62 @@ ul { list-style: none; }
   border-radius: 20px;
   border: 1px solid #C3D8EF;
 }
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.skill-remove {
+  background: none; border: none;
+  font-size: 15px; font-weight: 700;
+  color: var(--text-3);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color var(--transition);
+}
+.skill-remove:hover { color: #CC1016; }
+
+/* Skill add form */
+.skill-add-form {
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.skill-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.skill-select,
+.skill-level-select {
+  padding: 8px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text);
+  background: var(--white);
+  outline: none;
+  transition: border-color var(--transition);
+}
+.skill-select { flex: 1; min-width: 0; }
+.skill-level-select { width: 110px; flex-shrink: 0; }
+.skill-select:focus,
+.skill-level-select:focus { border-color: var(--blue); }
+.btn-add-skill {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition);
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-add-skill:hover { background: var(--blue-hover); }
 
 /* ── Lamaran ── */
 .lamaran-item {
@@ -341,8 +433,233 @@ footer {
 .btn-danger:hover { background: #CC1016; color: #fff; }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE
+   COMPLETION WIDGET (compact side card)
 ══════════════════════════════════════════ */
+
+.completion-widget {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.cw-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.cw-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+.cw-percent {
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+.cw-bar-wrap {
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.cw-bar {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 99px;
+  transition: width .6s ease;
+}
+.cw-sub {
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-bottom: 14px;
+}
+
+.cw-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.step-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 12px; font-weight: 500;
+  color: var(--text-3);
+  transition: background var(--transition), color var(--transition);
+}
+.step-item:hover {
+  background: var(--bg);
+}
+.step-item.done {
+  color: var(--green);
+}
+.step-icon {
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  width: 18px; height: 18px;
+}
+.step-icon svg { width: 14px; height: 14px; }
+.step-item.done .step-icon svg { color: var(--green); }
+.step-item:not(.done) .step-icon svg { color: var(--border); }
+.step-label {
+  line-height: 1.3;
+  flex: 1;
+}
+.step-arrow {
+  font-size: 11px;
+  color: var(--blue);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+.step-item.clickable { cursor: pointer; }
+.step-item.clickable:hover {
+  background: var(--blue-light);
+  color: var(--blue);
+}
+.step-item.clickable:hover .step-arrow { opacity: 1; }
+
+/* ══════════════════════════════════════════
+   CV UPLOAD ZONE
+══════════════════════════════════════════ */
+
+.cv-upload-zone { }
+
+.cv-drop-area {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 40px 24px;
+  text-align: center;
+  transition: border-color var(--transition), background var(--transition);
+  cursor: pointer;
+}
+.cv-drop-area:hover,
+.cv-drop-area.drag-over {
+  border-color: var(--blue);
+  background: var(--blue-light);
+}
+.cv-drop-area svg {
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+.cv-drop-area.drag-over svg { color: var(--blue); }
+
+.cv-title {
+  font-size: 15px; font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.cv-subtitle {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-bottom: 16px;
+}
+
+.btn-upload-cv {
+  display: inline-block;
+  background: var(--blue); color: #fff;
+  padding: 9px 24px; border-radius: 8px;
+  font-size: 13.5px; font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition);
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-upload-cv:hover { background: var(--blue-hover); }
+
+/* CV uploaded state */
+.cv-uploaded {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  background: var(--green-bg);
+  border: 1px solid #B7DFC5;
+  border-radius: var(--radius);
+  flex-wrap: wrap;
+}
+.cv-uploaded svg { color: var(--green); flex-shrink: 0; }
+.cv-file-info {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 120px;
+}
+.cv-file-info strong {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  word-break: break-all;
+}
+.cv-file-info span { font-size: 12px; color: var(--green); }
+
+.cv-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.btn-cv-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  text-decoration: none;
+  position: relative;
+}
+.btn-cv-action:hover { background: var(--bg); }
+.btn-cv-action svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.btn-cv-download { color: var(--blue); }
+.btn-cv-download:hover { background: var(--blue-light); border-color: var(--blue); }
+
+.btn-cv-replace { color: var(--blue); }
+.btn-cv-replace:hover { background: var(--blue-light); border-color: var(--blue); }
+
+.btn-cv-delete { color: #CC1016; }
+.btn-cv-delete:hover { background: #FFF0F0; border-color: #CC1016; }
+
+/* ── Email Verify Row ── */
+.email-verify-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.email-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.email-badge.verified   { background: var(--green-bg); color: var(--green); }
+.email-badge.unverified { background: #FEF3CD; color: #856404; }
+.email-badge.pending    { background: #E8F0FE; color: #1A73E8; }
+.btn-verify {
+  background: transparent;
+  border: 1.5px solid var(--blue);
+  color: var(--blue);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-verify:hover { background: var(--blue); color: #fff; }
+.btn-verify:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ═══ RESPONSIVE ═══ */
 
 @media (max-width: 768px) {
   .navbar {
@@ -376,7 +693,8 @@ footer {
     padding: 16px 0 8px;
     border-radius: var(--radius);
   }
-  .avatar { width: 56px; height: 56px; font-size: 1.5rem; }
+  .avatar-wrap { width: 56px; }
+  .avatar-wrap .avatar { width: 56px; height: 56px; font-size: 1.5rem; }
   .sidebar h3 { font-size: .95rem; margin-bottom: 12px; }
   .sidebar ul {
     display: flex;
@@ -407,6 +725,28 @@ footer {
   .grid-4 { grid-template-columns: 1fr 1fr; }
   .card { padding: 20px; }
   .form-row { grid-template-columns: 1fr; }
+
+  /* Detail grid stacks on tablet */
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .detail-aside {
+    position: static;
+    order: -1; /* completion widget goes above on mobile */
+  }
+  .cw-steps {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .cv-drop-area { padding: 28px 16px; }
+
+  .skill-add-row {
+    flex-wrap: wrap;
+  }
+  .skill-select { min-width: 100%; }
+  .email-verify-row { flex-wrap: wrap; }
 }
 
 @media (max-width: 480px) {
