@@ -1,7 +1,7 @@
-// ── CSRF Token untuk semua fetch POST ──
+// ambil csrf token buat semua request POST
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-// ── Tab Switching ──
+// ganti tab yang aktif
 function switchTab(el, tabId) {
     document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -9,7 +9,7 @@ function switchTab(el, tabId) {
     document.getElementById('tab-' + tabId).classList.add('active');
 }
 
-// ── Tampilkan pesan sukses/error ──
+// tampilin pesan sukses atau error
 function showMsg(elId, text, type) {
     const el = document.getElementById(elId);
     if (!el) return;
@@ -18,7 +18,7 @@ function showMsg(elId, text, type) {
     setTimeout(() => { el.textContent = ''; el.className = 'save-msg'; }, 3000);
 }
 
-// ── Hapus Akun ──
+// konfirmasi hapus akun
 function confirmDelete() {
     if (confirm('Apakah kamu yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.')) {
         fetch('/profil/hapus', {
@@ -41,7 +41,7 @@ function confirmDelete() {
     }
 }
 
-// ── Map kode pendidikan → label ──
+// map kode pendidikan ke label yang keliatan di UI
 const pendidikanLabel = {
     sma: 'SMA / SMK',
     d3:  'D3',
@@ -50,7 +50,7 @@ const pendidikanLabel = {
     s3:  'S3',
 };
 
-// ── Map status lamaran → CSS class ──
+// map status lamaran ke class css-nya
 const statusClass = {
     review:    'review',
     interview: 'interview',
@@ -119,22 +119,59 @@ function renderProfil(data) {
     document.getElementById('set-lokasi').value = u.lokasi  || '';
     document.getElementById('set-bio').value    = u.bio     || '';
 
-    // Riwayat Lamaran
+    // Riwayat Lamaran (Progress Timeline)
     const lamaranList = document.getElementById('lamaranList');
     if (data.lamaran && data.lamaran.length > 0) {
         lamaranList.innerHTML = data.lamaran.map(l => {
-            const cls   = statusClass[l.status] || 'pending';
-            const label = l.status.charAt(0).toUpperCase() + l.status.slice(1);
-            const tgl   = new Date(l.created_at).toLocaleDateString('id-ID', {
+            const tgl = new Date(l.created_at).toLocaleDateString('id-ID', {
                 day: '2-digit', month: 'long', year: 'numeric'
             });
+            const updatedTgl = l.updated_at ? new Date(l.updated_at).toLocaleDateString('id-ID', {
+                day: '2-digit', month: 'long', year: 'numeric'
+            }) : '';
+
+            // Determine stage index: 0=Dilamar, 1=Review, 2=Interview, 3=Final
+            const stages = ['dilamar', 'review', 'interview', 'final'];
+            const statusOrder = { pending: 0, review: 1, interview: 2, diterima: 3, ditolak: 3 };
+            const currentIdx = statusOrder[l.status] ?? 0;
+            const isRejected = l.status === 'ditolak';
+
+            // Build pipeline steps
+            let pipelineHTML = '';
+            stages.forEach((stage, i) => {
+                let label = stage.charAt(0).toUpperCase() + stage.slice(1);
+                if (i === 3) label = isRejected ? 'Ditolak' : 'Diterima';
+                const active = i <= currentIdx;
+                const current = i === currentIdx;
+                const cls = active ? (isRejected && i === 3 ? 'step-rejected' : 'step-active') : 'step-inactive';
+                const dotCls = current ? ' step-current' : '';
+                pipelineHTML += `<div class="pipeline-step ${cls}${dotCls}">
+                    <div class="pipeline-dot"></div>
+                    <span>${label}</span>
+                </div>`;
+                // Add connector line between steps (3 lines total for 4 steps)
+                if (i < stages.length - 1) {
+                    const lineActive = i < currentIdx ? ' line-active' : '';
+                    pipelineHTML += `<div class="pipeline-line${lineActive}"></div>`;
+                }
+            });
+
+            // Catatan (recruiter notes)
+            const catatanHTML = l.catatan
+                ? `<div class="lamaran-catatan"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>${l.catatan}</span></div>`
+                : '';
+
             return `
-                <div class="lamaran-item">
-                    <div>
-                        <strong>${l.nama_posisi}</strong>
-                        <p>${l.nama_perusahaan} &nbsp;&middot;&nbsp; ${tgl}</p>
+                <div class="lamaran-card">
+                    <div class="lamaran-card-header">
+                        <div>
+                            <strong>${l.nama_posisi}</strong>
+                            <p>${l.nama_perusahaan} &nbsp;&middot;&nbsp; Dilamar ${tgl}</p>
+                        </div>
                     </div>
-                    <span class="status ${cls}">${label}</span>
+                    <div class="pipeline-wrap">${pipelineHTML}</div>
+                    ${updatedTgl && currentIdx > 0 ? `<p class="lamaran-updated">Terakhir diperbarui: ${updatedTgl}</p>` : ''}
+                    ${catatanHTML}
                 </div>`;
         }).join('');
     } else {

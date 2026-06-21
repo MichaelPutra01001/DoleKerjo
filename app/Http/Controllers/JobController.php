@@ -9,23 +9,21 @@ class JobController extends Controller
 {
     public function index(Request $request)
     {
-        if (!session('user_id')) return redirect()->route('login');
-
         $userId = session('user_id');
 
-        // ── Filter params ──
+        // ambil parameter filter dari request
         $sort     = $request->input('sort', 'terbaru');
-        $kategori = $request->input('kategori', []);   // array of kategori values
-        $tipe     = $request->input('tipe', []);        // array of tipe values
-        $lokasi   = $request->input('lokasi', []);      // array of lokasi strings
+        $kategori = $request->input('kategori', []);   // array kategori yang dipilih
+        $tipe     = $request->input('tipe', []);        // array tipe yang dipilih
+        $lokasi   = $request->input('lokasi', []);      // array lokasi yang dipilih
 
-        // ── Build ORDER BY ──
+        // tentuin urutan sortir
         $orderBy = match($sort) {
             'gaji'      => 'j.gaji_max DESC',
-            default     => 'j.created_at DESC',  // terbaru
+            default     => 'j.created_at DESC',  // default terbaru
         };
 
-        // ── Build WHERE clauses ──
+        // bangun kondisi WHERE
         $where = [];
         $binds = [];
 
@@ -68,15 +66,8 @@ class JobController extends Controller
             ORDER BY {$orderBy}
         ", array_merge([$userId], $binds));
 
-        // ── Tipe mapping ──
-        $tipeMap = [
-            'full-time'   => ['class' => '',        'label' => 'Full Time'],
-            'part-time'   => ['class' => 'parttime', 'label' => 'Part Time'],
-            'remote'      => ['class' => 'remote',   'label' => 'Remote'],
-            'hybrid'      => ['class' => 'hybrid',   'label' => 'Hybrid'],
-            'contract'    => ['class' => 'contract', 'label' => 'Contract'],
-            'partnership' => ['class' => 'partner',  'label' => 'Partnership'],
-        ];
+        // mapping tipe ke label dan class css
+        $tipeMap = config('tipe_map');
 
         foreach ($jobs as $job) {
             $map = $tipeMap[$job->tipe] ?? ['class' => '', 'label' => ucfirst($job->tipe)];
@@ -84,10 +75,10 @@ class JobController extends Controller
             $job->tipe_label = $map['label'];
         }
 
-        // ── Get unique locations for filter ──
+        // ambil semua lokasi unik buat filter
         $locations = DB::select("SELECT DISTINCT lokasi FROM jobs WHERE lokasi IS NOT NULL AND lokasi != '' ORDER BY lokasi ASC");
 
-        // ── Get dynamic categories with job counts (trending first) ──
+        // ambil kategori dinamis dari db, yang paling banyak jobnya duluan
         $categories = DB::select("
             SELECT k.nama,
                 (SELECT COUNT(*) FROM jobs WHERE kategori = k.nama) AS job_count
@@ -100,8 +91,6 @@ class JobController extends Controller
 
     public function show($id)
     {
-        if (!session('user_id')) return redirect()->route('login');
-
         $userId = session('user_id');
 
         $job = DB::selectOne("
@@ -117,20 +106,13 @@ class JobController extends Controller
 
         if (!$job) abort(404);
 
-        // Tipe mapping
-        $tipeMap = [
-            'full-time'   => ['class' => '',        'label' => 'Full Time'],
-            'part-time'   => ['class' => 'parttime', 'label' => 'Part Time'],
-            'remote'      => ['class' => 'remote',   'label' => 'Remote'],
-            'hybrid'      => ['class' => 'hybrid',   'label' => 'Hybrid'],
-            'contract'    => ['class' => 'contract', 'label' => 'Contract'],
-            'partnership' => ['class' => 'partner',  'label' => 'Partnership'],
-        ];
+        // mapping tipe ke label dan class
+        $tipeMap = config('tipe_map');
         $map = $tipeMap[$job->tipe] ?? ['class' => '', 'label' => ucfirst($job->tipe)];
         $job->tipe_class = $map['class'];
         $job->tipe_label = $map['label'];
 
-        // Get company info if exists
+        // ambil info perusahaan kalau ada
         $perusahaan = DB::selectOne("
             SELECT p.*, u.nama AS recruiter_nama
             FROM perusahaan p
@@ -139,7 +121,7 @@ class JobController extends Controller
             LIMIT 1
         ", [$job->nama_perusahaan]);
 
-        // Related jobs (same company, max 5)
+        // job lain dari perusahaan yang sama, max 5
         $relatedJobs = DB::select("
             SELECT id, nama_posisi, lokasi, tipe, created_at
             FROM jobs
@@ -151,7 +133,7 @@ class JobController extends Controller
         return view('job_detail', compact('job', 'perusahaan', 'relatedJobs'));
     }
 
-    // ── JSON endpoint for modal (legacy support) ──
+    // endpoint JSON buat modal, masih dipakai
     public function data($id)
     {
         $job = DB::selectOne('SELECT * FROM jobs WHERE id = ?', [$id]);

@@ -1,5 +1,5 @@
 /* =============================================
-   PROFIL — GradMatch
+   PROFIL — DoleKerjo
    ============================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:wght@600;700&display=swap');
@@ -274,28 +274,81 @@ ul { list-style: none; }
 }
 .btn-add-skill:hover { background: var(--blue-hover); }
 
-/* ── Lamaran ── */
-.lamaran-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 0;
+/* ── Lamaran Progress Timeline ── */
+.lamaran-card {
+  padding: 16px 0;
   border-bottom: 1px solid var(--border);
 }
-.lamaran-item:last-child { border-bottom: none; padding-bottom: 0; }
-.lamaran-item strong { font-size: 14.5px; font-weight: 600; display: block; margin-bottom: 2px; }
-.lamaran-item p { font-size: 13px; color: var(--text-3); }
+.lamaran-card:last-child { border-bottom: none; }
+.lamaran-card-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  margin-bottom: 14px;
+}
+.lamaran-card-header strong { font-size: 14.5px; font-weight: 600; display: block; margin-bottom: 2px; }
+.lamaran-card-header p { font-size: 13px; color: var(--text-3); margin: 0; }
 
-.status {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 20px;
+/* Pipeline */
+.pipeline-wrap {
+  display: flex; align-items: center; gap: 0;
+  padding: 8px 0 6px;
+  overflow-x: auto;
+}
+.pipeline-step {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  min-width: 70px; position: relative;
+}
+.pipeline-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2.5px solid var(--border); background: var(--white);
+  transition: all .2s;
+}
+.pipeline-step span {
+  font-size: 11.5px; font-weight: 500; color: var(--text-3);
   white-space: nowrap;
 }
-.status.review    { background: var(--yellow-bg);  color: var(--yellow); }
-.status.interview { background: var(--green-bg);   color: var(--green); }
-.status.pending   { background: #F3F2EF;            color: var(--text-3); }
+.pipeline-line {
+  flex: 1; height: 2.5px; background: var(--border);
+  min-width: 24px; margin: 0 -2px; margin-bottom: 20px;
+  transition: background .2s;
+}
+.pipeline-line.line-active { background: var(--primary); }
+
+/* Active step */
+.pipeline-step.step-active .pipeline-dot { border-color: var(--primary); background: var(--primary); }
+.pipeline-step.step-active span { color: var(--primary); font-weight: 600; }
+
+/* Current step (pulsing) */
+.pipeline-step.step-current .pipeline-dot {
+  border-color: var(--primary); background: var(--primary);
+  box-shadow: 0 0 0 4px rgba(10,102,194,.15);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(10,102,194,.15); }
+  50%       { box-shadow: 0 0 0 8px rgba(10,102,194,.07); }
+}
+
+/* Rejected step */
+.pipeline-step.step-rejected .pipeline-dot { border-color: #CC1016; background: #CC1016; }
+.pipeline-step.step-rejected span { color: #CC1016; font-weight: 600; }
+
+/* Inactive step */
+.pipeline-step.step-inactive .pipeline-dot { border-color: var(--border); background: var(--white); }
+.pipeline-step.step-inactive span { color: var(--text-3); }
+
+/* Updated date */
+.lamaran-updated {
+  font-size: 12px; color: var(--text-3); margin: 6px 0 0;
+}
+
+/* Recruiter notes */
+.lamaran-catatan {
+  display: flex; align-items: flex-start; gap: 7px;
+  margin-top: 10px; padding: 10px 12px;
+  background: var(--bg); border-radius: 8px;
+  font-size: 13px; color: var(--text-2); line-height: 1.5;
+}
+.lamaran-catatan svg { flex-shrink: 0; margin-top: 1px; color: var(--text-3); }
 
 /* ── Footer ── */
 footer {
@@ -753,5 +806,5 @@ footer {
   .layout { padding: 0 12px; }
   .grid-4 { grid-template-columns: 1fr; gap: 14px; }
   .card h2 { font-size: 1rem; }
-  .lamaran-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .lamaran-card { padding: 12px 0; }
 }

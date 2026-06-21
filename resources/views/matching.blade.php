@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Skill Matching - GradMatch</title>
+    <title>Skill Matching - DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/matching.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -18,7 +18,7 @@
 <body>
 
 <nav class="navbar">
-    <a href="{{ route('home') }}" class="brand">GradMatch</a>
+    <a href="{{ route('home') }}" class="brand">DoleKerjo</a>
     <div class="nav-links">
         <a href="{{ route('home') }}">Home</a>
         <a href="{{ route('profil') }}">Profil</a>
@@ -73,9 +73,41 @@
 
         <button type="submit" id="btnSubmit">Cocokkan Sekarang</button>
     </form>
+
+    {{-- AI Matching Section --}}
+    <div class="ai-match-section">
+        <div class="ai-divider">
+            <span>atau</span>
+        </div>
+        <div class="ai-card">
+            <div class="ai-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+                    <path d="M16 12v1a4 4 0 0 1-8 0v-1"/>
+                    <line x1="12" y1="16" x2="12" y2="22"/>
+                    <line x1="8" y1="22" x2="16" y2="22"/>
+                </svg>
+            </div>
+            <h3>AI Job Matching</h3>
+            <p>Biarkan AI menganalisis CV kamu dan mencocokkan dengan lowongan terbaik berdasarkan skill, pengalaman, dan pendidikan.</p>
+            @if($hasCV)
+                <form method="POST" action="{{ route('ai.match') }}" id="aiForm">
+                    @csrf
+                    <button type="submit" class="btn-ai" id="btnAI">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Analisis CV dengan AI
+                    </button>
+                </form>
+            @else
+                <div class="ai-no-cv">
+                    <p>Upload CV (PDF/DOCX) di <a href="{{ route('profil') }}">Profil</a> terlebih dahulu untuk menggunakan fitur ini.</p>
+                </div>
+            @endif
+        </div>
+    </div>
 </section>
 
-<footer><p>&copy; 2026 GradMatch</p></footer>
+<footer><p>&copy; 2026 DoleKerjo</p></footer>
 
 <!-- Pass profile skills to JS -->
 <script>

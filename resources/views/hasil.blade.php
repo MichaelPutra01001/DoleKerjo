@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hasil Skill Matching - GradMatch</title>
+    <title>Hasil Skill Matching - DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/hasil.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -17,7 +17,7 @@
 <body>
 
 <nav class="navbar">
-    <a href="{{ route('home') }}" class="brand">GradMatch</a>
+    <a href="{{ route('home') }}" class="brand">DoleKerjo</a>
     <div class="nav-links">
         <a href="{{ route('home') }}">Home</a>
         <a href="{{ route('profil') }}">Profil</a>
@@ -123,7 +123,7 @@
     </div>
 </div>
 
-<footer><p>&copy; 2026 GradMatch</p></footer>
+<footer><p>&copy; 2026 DoleKerjo</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/hasil.js') }}"></script>

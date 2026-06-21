@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - GradMatch</title>
+    <title>Home - DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/home.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
 <body>
 
 <nav class="navbar">
-    <a href="{{ route('home') }}" class="brand">GradMatch</a>
+    <a href="{{ route('home') }}" class="brand">DoleKerjo</a>
     <div class="nav-links">
         <a href="{{ route('home') }}" class="active">Home</a>
         <a href="/profil">Profil</a>
@@ -45,14 +45,14 @@
             Mulai Kariermu dengan Tepat
             <svg style="display:inline-block;vertical-align:middle;margin-left:6px" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
         </h2>
-        <p class="reveal">GradMatch membantu fresh graduate menemukan pekerjaan yang sesuai dengan skill dan kompetensi mereka.</p>
+        <p class="reveal">DoleKerjo membantu fresh graduate menemukan pekerjaan yang sesuai dengan skill dan kompetensi mereka.</p>
         <a href="/matching" class="btn-primary reveal">Coba Skill Matching</a>
     </div>
 </section>
 
 <section class="features">
     <div class="container">
-        <h2 class="reveal">Kenapa GradMatch?</h2>
+        <h2 class="reveal">Kenapa DoleKerjo?</h2>
         <div class="cards">
             <div class="card reveal">
                 <h3>
@@ -135,7 +135,7 @@
     </div>
 </section>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>© 2026 DoleKerjo</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/home.js') }}"></script>

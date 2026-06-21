@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>List Job - GradMatch</title>
+    <title>List Job - DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/jobs.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -18,7 +18,7 @@
 <body class="jobs-listing-page">
 
 <nav class="navbar">
-    <a href="{{ route('home') }}" class="brand">GradMatch</a>
+    <a href="{{ route('home') }}" class="brand">DoleKerjo</a>
     <div class="nav-links">
         <a href="{{ route('home') }}">Home</a>
         <a href="{{ route('profil') }}">Profil</a>
@@ -196,7 +196,7 @@
 <!-- Toast notification -->
 <div id="toast" class="toast"></div>
 
-<footer><p>&copy; 2026 GradMatch</p></footer>
+<footer><p>&copy; 2026 DoleKerjo</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/jobs.js') }}"></script>

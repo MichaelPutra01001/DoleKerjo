@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lowongan Saya - GradMatch Recruiter</title>
+    <title>Lowongan Saya - DoleKerjo Recruiter</title>
     <link rel="stylesheet" href="{{ asset('css/recruiter.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -19,7 +19,7 @@
 <!-- ── Topbar ── -->
 <header class="topbar">
     <div>
-        <a href="{{ route('recruiter.dashboard') }}" class="brand">GradMatch <small>Recruiter</small></a>
+        <a href="{{ route('recruiter.dashboard') }}" class="brand">DoleKerjo <small>Recruiter</small></a>
     </div>
     <div class="topbar-right">
         <span class="recruiter-name">{{ session('nama') }}</span>
@@ -230,7 +230,7 @@
     </div>
 </div>
 
-<footer class="recruiter-footer"><p>© 2026 GradMatch — Recruiter Panel</p></footer>
+<footer class="recruiter-footer"><p>© 2026 DoleKerjo — Recruiter Panel</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/recruiter.js') }}"></script>

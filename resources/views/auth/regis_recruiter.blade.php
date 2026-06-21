@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Rekruter - GradMatch</title>
+    <title>Daftar Rekruter - DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/regis.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <link rel="stylesheet" href="{{ asset('css/regis_recruiter.css') }}">
@@ -18,7 +18,7 @@
 <body>
 
 <div class="top-bar">
-    <a href="{{ route('login') }}" class="brand">GradMatch</a>
+    <a href="{{ route('login') }}" class="brand">DoleKerjo</a>
     <p>Portal Registrasi Perusahaan Mitra & Rekruter</p>
     <div style="margin-left: auto;">
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
@@ -174,7 +174,7 @@
     </div>
 </section>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>© 2026 DoleKerjo</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script>

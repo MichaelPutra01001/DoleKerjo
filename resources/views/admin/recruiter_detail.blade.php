@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Recruiter - GradMatch Admin</title>
+    <title>Detail Recruiter - DoleKerjo Admin</title>
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -19,7 +19,7 @@
 <!-- ── Topbar ── -->
 <header class="topbar">
     <div>
-        <a href="{{ route('admin.dashboard') }}" class="brand">GradMatch <small>Admin</small></a>
+        <a href="{{ route('admin.dashboard') }}" class="brand">DoleKerjo <small>Admin</small></a>
     </div>
     <div class="topbar-right">
         <span class="admin-name">{{ session('nama') }}</span>
@@ -201,7 +201,7 @@
     </main>
 </div>
 
-<footer class="admin-footer"><p>© 2026 GradMatch — Admin Panel</p></footer>
+<footer class="admin-footer"><p>© 2026 DoleKerjo — Admin Panel</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/admin.js') }}"></script>

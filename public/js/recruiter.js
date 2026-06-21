@@ -1,8 +1,6 @@
-// =============================================
-// RECRUITER — GradMatch Recruiter Portal JS
-// =============================================
+// === recruiter portal JS ===
 
-// Scroll reveal
+// efek scroll reveal waktu elemen masuk viewport
 const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
         if (e.isIntersecting) {
@@ -13,7 +11,7 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Count-up animation
+// animasi angka naik pelan-pelan
 function countUp(el) {
     const target = parseInt(el.dataset.target);
     const duration = 1200;
@@ -26,6 +24,8 @@ function countUp(el) {
     };
     requestAnimationFrame(step);
 }
+
+// jalanin animasi angka waktu masuk viewport
 const statObserver = new IntersectionObserver(entries => {
     entries.forEach(e => {
         if (e.isIntersecting && e.target.dataset.target !== undefined) {
@@ -36,14 +36,14 @@ const statObserver = new IntersectionObserver(entries => {
 }, { threshold: 0.3 });
 document.querySelectorAll('[data-target]').forEach(el => statObserver.observe(el));
 
-// Confirm delete
+// konfirmasi sebelum hapus
 function confirmDelete(formId) {
     if (confirm('Yakin ingin menghapus data ini?')) {
         document.getElementById(formId).submit();
     }
 }
 
-// Auto-dismiss alerts
+// alert otomatis hilang setelah 4 detik
 document.querySelectorAll('.alert').forEach(alert => {
     setTimeout(() => {
         alert.style.transition = 'opacity .3s ease';
@@ -52,7 +52,7 @@ document.querySelectorAll('.alert').forEach(alert => {
     }, 4000);
 });
 
-// Toggle sort direction
+// ganti arah sort terus submit form
 function toggleDir() {
     const dirInput = document.getElementById('dirInput');
     if (!dirInput) return;
@@ -60,7 +60,7 @@ function toggleDir() {
     document.getElementById('sortForm').submit();
 }
 
-// Search debounce (for lamaran page)
+// debounce search di halaman lamaran, submit setelah 600ms berhenti ngetik
 (function() {
     const input = document.getElementById('searchInput');
     const form  = document.getElementById('searchForm');
@@ -75,7 +75,7 @@ function toggleDir() {
     });
 })();
 
-// ── Job Modal ──
+// === modal tambah/edit job ===
 function openJobModal(mode, jobData) {
     const modal = document.getElementById('jobModal');
     const title = document.getElementById('modalTitle');
@@ -89,13 +89,13 @@ function openJobModal(mode, jobData) {
     } else if (mode === 'edit' && jobData) {
         title.textContent = 'Edit Lowongan';
         form.action = form.dataset.updateUrl.replace('__ID__', jobData.id);
-        // Add _method PUT
+        // tambahin method PUT buat edit
         if (!form.querySelector('[name="_method"]')) {
             const input = document.createElement('input');
             input.type = 'hidden'; input.name = '_method'; input.value = 'PUT';
             form.appendChild(input);
         }
-        // Fill fields
+        // isi field form dengan data job yang mau diedit
         form.nama_posisi.value = jobData.nama_posisi || '';
         form.nama_perusahaan.value = jobData.nama_perusahaan || '';
         form.lokasi.value = jobData.lokasi || '';
@@ -114,6 +114,7 @@ function closeJobModal() {
     document.getElementById('jobModal').classList.remove('show');
 }
 
+// ambil data job dari server terus buka modal edit
 function editJob(id) {
     fetch(`/recruiter/jobs/${id}/data`)
         .then(r => r.json())
@@ -122,17 +123,17 @@ function editJob(id) {
         });
 }
 
-// Close modal on overlay click
+// tutup modal kalau klik di luar area modal
 document.addEventListener('click', e => {
     if (e.target.classList.contains('modal-overlay')) closeJobModal();
 });
 
-// Close modal on Escape
+// tutup modal kalau pencet Escape
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeJobModal();
 });
 
-// Change applicant status
+// ganti status lamaran pelamar
 function changeStatus(lamaranId, newStatus) {
     const form = document.getElementById('status-form-' + lamaranId);
     if (form) {

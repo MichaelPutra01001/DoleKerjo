@@ -1,8 +1,6 @@
-// =============================================
-// ADMIN — GradMatch Admin Panel JS
-// =============================================
+// === admin panel JS ===
 
-// Scroll reveal
+// efek scroll reveal buat elemen yang masuk viewport
 const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
         if (e.isIntersecting) {
@@ -13,7 +11,7 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Count-up animation for stat values
+// animasi angka naik pelan-pelan
 function countUp(el) {
     const target = parseInt(el.dataset.target);
     const duration = 1200;
@@ -27,6 +25,7 @@ function countUp(el) {
     requestAnimationFrame(step);
 }
 
+// jalanin animasi angka waktu elemen masuk viewport
 const statObserver = new IntersectionObserver(entries => {
     entries.forEach(e => {
         if (e.isIntersecting && e.target.dataset.target !== undefined) {
@@ -37,14 +36,14 @@ const statObserver = new IntersectionObserver(entries => {
 }, { threshold: 0.3 });
 document.querySelectorAll('[data-target]').forEach(el => statObserver.observe(el));
 
-// Confirm delete
+// konfirmasi sebelum hapus data
 function confirmDelete(formId) {
     if (confirm('Yakin ingin menghapus data ini?')) {
         document.getElementById(formId).submit();
     }
 }
 
-// Auto-dismiss alerts after 4s
+// alert otomatis hilang setelah 4 detik
 document.querySelectorAll('.alert').forEach(alert => {
     setTimeout(() => {
         alert.style.transition = 'opacity .3s ease';
@@ -53,7 +52,7 @@ document.querySelectorAll('.alert').forEach(alert => {
     }, 4000);
 });
 
-// Toggle sort direction and submit
+// ganti arah sort terus submit form
 function toggleDir() {
     const dirInput = document.getElementById('dirInput');
     if (!dirInput) return;
@@ -61,7 +60,7 @@ function toggleDir() {
     document.getElementById('sortForm').submit();
 }
 
-// Search input — submit after 600ms idle
+// submit form search setelah user berhenti ngetik 600ms
 (function() {
     const input = document.getElementById('searchInput');
     const form  = document.getElementById('searchForm');
@@ -73,7 +72,7 @@ function toggleDir() {
         timer = setTimeout(() => form.submit(), 600);
     });
 
-    // Submit immediately on Enter
+    // langsung submit kalau pencet Enter
     input.addEventListener('keydown', e => {
         if (e.key === 'Enter') {
             clearTimeout(timer);

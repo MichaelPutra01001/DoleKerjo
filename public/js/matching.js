@@ -1,4 +1,4 @@
-// ─── Skill Matching JS ─────────────────────────────────────────────────
+// === skill matching JS ===
 
 const chipsArea  = document.getElementById('skillChipsArea');
 const skillInput = document.getElementById('skillInput');
@@ -6,18 +6,18 @@ const hiddenIn   = document.getElementById('skillsHidden');
 const noHint     = document.getElementById('noSkillsHint');
 const form       = document.getElementById('matchingForm');
 
-// ── Collect all current chip skill names into hidden input ──
+// kumpulin semua chip skill terus masukin ke hidden input
 function syncHidden() {
     const chips = chipsArea.querySelectorAll('.skill-chip');
     const names = Array.from(chips).map(c => c.dataset.skill);
     hiddenIn.value = names.join(',');
-    // Toggle hint visibility
+    // tampilkan atau sembunyikan hint kalau ga ada chip
     if (noHint) {
         noHint.style.display = chips.length > 0 ? 'none' : '';
     }
 }
 
-// ── Create a chip element ──
+// bikin elemen chip baru
 function createChip(name) {
     const span = document.createElement('span');
     span.className = 'skill-chip';
@@ -30,19 +30,19 @@ function createChip(name) {
     return span;
 }
 
-// ── Check if skill already exists (case-insensitive) ──
+// cek apakah skill sudah ada (case-insensitive)
 function skillExists(name) {
     const lower = name.toLowerCase();
     const chips = chipsArea.querySelectorAll('.skill-chip');
     return Array.from(chips).some(c => c.dataset.skill.toLowerCase() === lower);
 }
 
-// ── Add skills from input ──
+// tambah skill dari input, bisa dipisah koma
 function addSkillFromInput() {
     const raw = skillInput.value.trim();
     if (!raw) return;
 
-    // Split by comma
+    // split berdasarkan koma
     const parts = raw.split(',').map(s => s.trim()).filter(s => s.length > 0);
     let added = 0;
 
@@ -59,10 +59,10 @@ function addSkillFromInput() {
     }
 }
 
-// Make it global so onclick works
+// expose ke global biar bisa dipanggil dari onclick
 window.addSkillFromInput = addSkillFromInput;
 
-// ── Remove a chip ──
+// hapus chip dengan animasi kecil
 function removeChip(btn) {
     const chip = btn.closest('.skill-chip');
     if (chip) {
@@ -76,7 +76,7 @@ function removeChip(btn) {
 }
 window.removeChip = removeChip;
 
-// ── Enter key on input ──
+// tekan Enter di input langsung nambahin skill
 skillInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
         e.preventDefault();
@@ -84,11 +84,11 @@ skillInput.addEventListener('keydown', function(e) {
     }
 });
 
-// ── Form submit: ensure hidden is populated ──
+// waktu form di-submit, pastiin hidden input terisi
 form.addEventListener('submit', function(e) {
     syncHidden();
 
-    // Check at least 1 skill
+    // kalau ga ada skill sama sekali, blokir submit
     if (!hiddenIn.value.trim()) {
         e.preventDefault();
         skillInput.focus();
@@ -102,5 +102,18 @@ form.addEventListener('submit', function(e) {
     }
 });
 
-// ── Init: sync hidden on page load (profile skills pre-populated) ──
+// sync hidden pas halaman pertama kali dibuka (skill dari profil udah ke-load)
 syncHidden();
+
+// tombol AI matching, tampilin loading spinner waktu disubmit
+const aiForm = document.getElementById('aiForm');
+const btnAI = document.getElementById('btnAI');
+if (aiForm) {
+    aiForm.addEventListener('submit', function() {
+        if (btnAI) {
+            btnAI.classList.add('loading');
+            btnAI.disabled = true;
+            btnAI.innerHTML = 'AI sedang menganalisis...';
+        }
+    });
+}

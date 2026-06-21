@@ -1,5 +1,5 @@
 /* ============================================================
-   perusahaan.js - GradMatch Company Pages
+   perusahaan.js - DoleKerjo Company Pages
    ============================================================ */
 
 const PERUSAHAAN_ID   = window.PERUSAHAAN_ID   || null;

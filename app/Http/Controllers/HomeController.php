@@ -8,16 +8,14 @@ class HomeController extends Controller
 {
     public function index()
     {
-        if (!session('user_id')) return redirect()->route('login');
-
         $userId = session('user_id');
 
-        // Stats
+        // ngambil data statistik buat ditampilin di halaman home
         $totalCompanies = DB::selectOne("SELECT COUNT(*) AS c FROM perusahaan")->c;
         $totalJobs      = DB::selectOne("SELECT COUNT(*) AS c FROM jobs")->c;
         $totalUsers     = DB::selectOne("SELECT COUNT(*) AS c FROM users WHERE role = 'user'")->c;
 
-        // 4 recent jobs
+        // ambil 4 job terbaru
         $recentJobs = DB::select("
             SELECT j.id, j.nama_posisi, j.nama_perusahaan, j.lokasi, j.tipe, j.kategori, j.created_at,
                 COUNT(l.id) AS total_pelamar
@@ -28,7 +26,7 @@ class HomeController extends Controller
             LIMIT 4
         ");
 
-        // 2 recent reviews
+        // ambil 2 review terbaru
         $recentReviews = DB::select("
             SELECT r.rating, r.isi_review, r.nama_perusahaan, u.nama AS reviewer
             FROM reviews r
@@ -37,14 +35,7 @@ class HomeController extends Controller
             LIMIT 2
         ");
 
-        $tipeMap = [
-            'full-time'   => ['class' => '',        'label' => 'Full Time'],
-            'part-time'   => ['class' => 'parttime', 'label' => 'Part Time'],
-            'remote'      => ['class' => 'remote',   'label' => 'Remote'],
-            'hybrid'      => ['class' => 'hybrid',   'label' => 'Hybrid'],
-            'contract'    => ['class' => 'contract', 'label' => 'Contract'],
-            'partnership' => ['class' => 'partner',  'label' => 'Partnership'],
-        ];
+        $tipeMap = config('tipe_map');
         foreach ($recentJobs as $job) {
             $map = $tipeMap[$job->tipe] ?? ['class' => '', 'label' => ucfirst($job->tipe)];
             $job->tipe_class = $map['class'];

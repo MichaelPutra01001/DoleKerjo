@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar - GradMatch</title>
+    <title>Daftar - DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/regis.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -17,7 +17,7 @@
 <body>
 
 <div class="top-bar">
-    <a href="{{ route('login') }}" class="brand">GradMatch</a>
+    <a href="{{ route('login') }}" class="brand">DoleKerjo</a>
     <p>Platform Job Matching Berbasis Kompetensi</p>
     <div style="margin-left: auto;">
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
@@ -102,7 +102,7 @@
             <div class="checkbox-group">
                 <label class="check-label">
                     <input type="checkbox" id="agree" name="agree" required>
-                    <span>Saya menyetujui <a href="#">Syarat & Ketentuan</a> dan <a href="#">Kebijakan Privasi</a> GradMatch</span>
+                    <span>Saya menyetujui <a href="#">Syarat & Ketentuan</a> dan <a href="#">Kebijakan Privasi</a> DoleKerjo</span>
                 </label>
             </div>
 
@@ -121,7 +121,7 @@
     </div>
 </section>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>© 2026 DoleKerjo</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/regis.js') }}"></script>

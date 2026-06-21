@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Detail perusahaan {{ $perusahaan->nama }} — review, lowongan, dan informasi lengkap di GradMatch.">
+    <meta name="description" content="Detail perusahaan {{ $perusahaan->nama }} — review, lowongan, dan informasi lengkap di DoleKerjo.">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $perusahaan->nama }} — GradMatch</title>
+    <title>{{ $perusahaan->nama }} — DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/perusahaan.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -20,7 +20,7 @@
 
 <!-- ── Navbar ── -->
 <nav class="navbar">
-    <a href="{{ route('home') }}" class="brand">GradMatch</a>
+    <a href="{{ route('home') }}" class="brand">DoleKerjo</a>
     <div class="nav-links">
         <a href="{{ route('home') }}">Home</a>
         <a href="{{ route('profil') }}">Profil</a>
@@ -166,7 +166,7 @@
     </div>
 </div>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>© 2026 DoleKerjo</p></footer>
 
 <!-- Pass data ke JS -->
 <script>

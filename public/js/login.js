@@ -1,4 +1,4 @@
-// ── Toggle Password Visibility ──
+// fungsi buat show/hide password
 function togglePass(fieldId, btn) {
     const input = document.getElementById(fieldId);
     if (input.type === 'password') {
@@ -18,7 +18,8 @@ function handleLogin(e) {
     if (!user || !pass) { err.textContent = 'Email dan password tidak boleh kosong.'; return; }
     err.textContent = '';
 }
-// TAMPILKAN ERROR DARI PHP
+
+// tampilin error dari PHP kalau ada di URL
 const params = new URLSearchParams(window.location.search);
 const error = params.get('error');
 
@@ -27,7 +28,7 @@ if (error) {
     window.history.replaceState({}, document.title, "Login.html");
 }
 
-// ── Forgot Password Logic ──
+// === bagian lupa password ===
 const forgotModal = document.getElementById('forgotPasswordModal');
 const stepEmail = document.getElementById('stepEmail');
 const stepReset = document.getElementById('stepReset');
@@ -35,6 +36,7 @@ const forgotEmailInput = document.getElementById('forgotEmail');
 const emailError = document.getElementById('emailError');
 const resetError = document.getElementById('resetError');
 
+// buka modal lupa password waktu link diklik
 document.getElementById('forgotPasswordLink')?.addEventListener('click', (e) => {
     e.preventDefault();
     forgotModal.style.display = 'flex';
@@ -55,9 +57,10 @@ function handleCheckEmail() {
         emailError.textContent = 'Harap isi email terlebih dahulu.';
         return;
     }
-    
+
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
+    // kirim request cek email ke server
     fetch('/forgot-password/check-email', {
         method: 'POST',
         headers: {
@@ -85,7 +88,7 @@ function handleResetPassword() {
     const email = forgotEmailInput.value.trim();
     const password = document.getElementById('forgotNewPassword').value;
     const confirm_password = document.getElementById('forgotConfirmPassword').value;
-    
+
     if (!password || !confirm_password) {
         resetError.textContent = 'Harap isi semua kolom password.';
         return;
@@ -101,6 +104,7 @@ function handleResetPassword() {
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
+    // kirim request reset password ke server
     fetch('/forgot-password/reset', {
         method: 'POST',
         headers: {
@@ -123,14 +127,17 @@ function handleResetPassword() {
     });
 }
 
-// ── Role Switcher Logic ──
+// === bagian ganti role login (user / eksekutif) ===
 let currentRole = 'user';
 
 function toggleRole(e) {
     if (e) e.preventDefault();
-    
+
+    // ganti role antara user dan executive
     currentRole = currentRole === 'user' ? 'executive' : 'user';
-    
+    const loginMode = document.getElementById('loginMode');
+    if (loginMode) loginMode.value = currentRole === 'executive' ? 'executive' : 'user';
+
     const loginTitle = document.getElementById('loginTitle');
     const loginSub = document.getElementById('loginSub');
     const usernameInput = document.getElementById('usernameInput');

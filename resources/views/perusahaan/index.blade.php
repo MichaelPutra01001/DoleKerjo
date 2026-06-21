@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Daftar perusahaan terdaftar di platform GradMatch. Temukan insight, review, dan lowongan dari berbagai perusahaan.">
-    <title>Perusahaan — GradMatch</title>
+    <meta name="description" content="Daftar perusahaan terdaftar di platform DoleKerjo. Temukan insight, review, dan lowongan dari berbagai perusahaan.">
+    <title>Perusahaan — DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/perusahaan.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -19,7 +19,7 @@
 
 <!-- ── Navbar ── -->
 <nav class="navbar">
-    <a href="{{ route('home') }}" class="brand">GradMatch</a>
+    <a href="{{ route('home') }}" class="brand">DoleKerjo</a>
     <div class="nav-links">
         <a href="{{ route('home') }}">Home</a>
         <a href="{{ route('profil') }}">Profil</a>
@@ -40,7 +40,7 @@
 <!-- ── Page Header ── -->
 <div class="page-header">
     <h1>Direktori <span>Perusahaan</span></h1>
-    <p>{{ count($perusahaan) }} perusahaan terdaftar di platform GradMatch</p>
+    <p>{{ count($perusahaan) }} perusahaan terdaftar di platform DoleKerjo</p>
 </div>
 
 <!-- ── Search ── -->
@@ -160,7 +160,7 @@
     @endif
 </div>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>© 2026 DoleKerjo</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/perusahaan.js') }}"></script>

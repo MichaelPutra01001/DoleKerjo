@@ -1,8 +1,6 @@
-/* ============================================================
-   jobs.js - GradMatch Job Listing & Detail Pages
-   ============================================================ */
+/* jobs.js - halaman daftar job dan detail job */
 
-// ── Scroll Reveal ──
+// efek scroll reveal
 const observer = new IntersectionObserver(entries => {
     entries.forEach(e => {
         if (e.isIntersecting) {
@@ -13,7 +11,7 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// ── Toast notification ──
+// tampilin notifikasi toast
 function showToast(msg, type = 'success') {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -22,30 +20,28 @@ function showToast(msg, type = 'success') {
     setTimeout(() => { toast.className = 'toast'; }, 3000);
 }
 
-// ── CSRF token ──
+// ambil csrf token dari meta tag
 function csrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content || '';
 }
 
-// ══════════════════════════════════════════════════════════
-//  LISTING PAGE — Filter & Quick Apply
-// ══════════════════════════════════════════════════════════
+// === bagian listing job ===
 
-// ── Auto-submit filter on change ──
+// auto submit filter kalau ada yang diubah
 document.querySelectorAll('#filterForm input').forEach(input => {
     input.addEventListener('change', () => {
         document.getElementById('filterForm').submit();
     });
 });
 
-// ── Show more / Show less toggle for filter groups ──
+// toggle show more / show less di grup filter
 function toggleShowMore(listId) {
     const list = document.getElementById(listId);
     if (!list) return;
     list.classList.toggle('expanded');
 }
 
-// ── Reset filter ──
+// reset semua filter ke default
 function resetFilter() {
     const form = document.getElementById('filterForm');
     if (!form) return;
@@ -56,13 +52,13 @@ function resetFilter() {
     form.submit();
 }
 
-// ── Mobile filter toggle ──
+// toggle sidebar filter di mobile
 function toggleFilterMobile() {
     const sidebar = document.getElementById('filterSidebar');
     if (sidebar) sidebar.classList.toggle('open');
 }
 
-// ── Quick Apply (Daftar Cepat) on listing page ──
+// daftar cepat langsung dari listing page
 document.addEventListener('click', function(e) {
     const btn = e.target.closest('.btn-daftar-cepat');
     if (!btn || btn.disabled) return;
@@ -105,7 +101,7 @@ document.addEventListener('click', function(e) {
     });
 });
 
-// ── Close mobile filter on outside click ──
+// tutup sidebar filter kalau klik di luar area filter
 document.addEventListener('click', function(e) {
     const sidebar = document.getElementById('filterSidebar');
     if (!sidebar || !sidebar.classList.contains('open')) return;

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - GradMatch</title>
+    <title>Login - DoleKerjo</title>
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -19,7 +19,7 @@
 <body>
 
 <div class="top-bar">
-    <h1>GradMatch</h1>
+    <h1>DoleKerjo</h1>
     <p>Platform Job Matching Berbasis Kompetensi</p>
     <div style="margin-left: auto;">
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
@@ -36,6 +36,7 @@
 
         <form action="{{ route('login') }}" method="POST">
             @csrf
+            <input type="hidden" name="login_mode" id="loginMode" value="user">
             <input type="text" name="username" id="usernameInput" placeholder="Email atau Username"
                    value="{{ old('username') }}" required>
             <div class="input-wrap">
@@ -101,7 +102,7 @@
 
 </section>
 
-<footer><p>© 2026 GradMatch</p></footer>
+<footer><p>© 2026 DoleKerjo</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/login.js') }}"></script>

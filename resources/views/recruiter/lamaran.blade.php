@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lamaran - GradMatch Recruiter</title>
+    <title>Lamaran - DoleKerjo Recruiter</title>
     <link rel="stylesheet" href="{{ asset('css/recruiter.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
     <script>
@@ -19,7 +19,7 @@
 <!-- ── Topbar ── -->
 <header class="topbar">
     <div>
-        <a href="{{ route('recruiter.dashboard') }}" class="brand">GradMatch <small>Recruiter</small></a>
+        <a href="{{ route('recruiter.dashboard') }}" class="brand">DoleKerjo <small>Recruiter</small></a>
     </div>
     <div class="topbar-right">
         <span class="recruiter-name">{{ session('nama') }}</span>
@@ -116,6 +116,7 @@
                         <th>Posisi Dilamar</th>
                         <th>Email</th>
                         <th>Telepon</th>
+                        <th>CV</th>
                         <th>Tanggal</th>
                         <th>Status</th>
                         <th style="text-align:right;">Ubah Status</th>
@@ -133,6 +134,16 @@
                         <td>{{ $a->nama_posisi }}</td>
                         <td style="font-size:12px;">{{ $a->email }}</td>
                         <td style="font-size:12px;">{{ $a->telepon ?? '-' }}</td>
+                        <td>
+                            @if ($a->cv)
+                                <a href="{{ asset($a->cv) }}" target="_blank" class="btn-cv-dl" title="Download CV">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    <span>CV</span>
+                                </a>
+                            @else
+                                <span style="color:var(--text-3);font-size:12px">—</span>
+                            @endif
+                        </td>
                         <td style="font-size:12px;color:var(--text-3);">{{ \Carbon\Carbon::parse($a->created_at)->format('d M Y') }}</td>
                         <td><span class="badge {{ $a->status }}">{{ $a->status }}</span></td>
                         <td style="text-align:right;">
@@ -215,7 +226,7 @@
     </main>
 </div>
 
-<footer class="recruiter-footer"><p>© 2026 GradMatch — Recruiter Panel</p></footer>
+<footer class="recruiter-footer"><p>© 2026 DoleKerjo — Recruiter Panel</p></footer>
 
 <script src="{{ asset('js/dark-mode.js') }}"></script>
 <script src="{{ asset('js/recruiter.js') }}"></script>

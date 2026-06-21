@@ -7,23 +7,16 @@ use Illuminate\Support\Facades\DB;
 
 class RecruiterController extends Controller
 {
-    // ─── Guard ──────────────────────────────────────────────────────
-    private function guard()
-    {
-        if (!session('user_id') || session('role') !== 'recruiter') {
-            abort(403, 'Akses ditolak.');
-        }
-    }
+    // autentikasi diurus sama middleware recruiter.only
 
     private function userId()
     {
         return session('user_id');
     }
 
-    // ─── Dashboard ──────────────────────────────────────────────────
+    // === bagian dashboard ===
     public function dashboard()
     {
-        $this->guard();
         $uid = $this->userId();
 
         $totalJobs = DB::selectOne("SELECT COUNT(*) AS c FROM jobs WHERE recruiter_id = ?", [$uid])->c;
@@ -58,7 +51,7 @@ class RecruiterController extends Controller
             WHERE j.recruiter_id = ? AND l.status = 'ditolak'
         ", [$uid])->c;
 
-        // Recent applicants (last 8)
+        // ambil 8 pelamar terbaru
         $recentApplicants = DB::select("
             SELECT l.id, l.status, l.created_at, u.nama, u.email, j.nama_posisi, j.id AS job_id
             FROM lamaran l
@@ -68,14 +61,14 @@ class RecruiterController extends Controller
             ORDER BY l.created_at DESC LIMIT 8
         ", [$uid]);
 
-        // Recent jobs (last 5)
+        // ambil 5 job terbaru
         $recentJobs = DB::select("
             SELECT id, nama_posisi, nama_perusahaan, tipe, created_at
             FROM jobs WHERE recruiter_id = ?
             ORDER BY created_at DESC LIMIT 5
         ", [$uid]);
 
-        // Company rating from reviews
+        // ambil rating perusahaan dari tabel reviews
         $companyRating = DB::selectOne("
             SELECT
                 COUNT(*) AS total,
@@ -92,10 +85,9 @@ class RecruiterController extends Controller
         ));
     }
 
-    // ─── Jobs ───────────────────────────────────────────────────────
+    // === bagian jobs ===
     public function jobs(Request $request)
     {
-        $this->guard();
         $uid = $this->userId();
 
         $sort  = $request->get('sort', 'id');
@@ -105,21 +97,14 @@ class RecruiterController extends Controller
         $dirSQL = strtoupper($dir);
 
         $jobs = DB::select("
-            SELECT j.*, 
+            SELECT j.*,
                 (SELECT COUNT(*) FROM lamaran WHERE job_id = j.id) AS pelamar_count
             FROM jobs j
             WHERE j.recruiter_id = ?
             ORDER BY j.{$sort} {$dirSQL}
         ", [$uid]);
 
-        $tipeMap = [
-            'full-time'   => ['class' => '',        'label' => 'Full Time'],
-            'part-time'   => ['class' => 'parttime', 'label' => 'Part Time'],
-            'remote'      => ['class' => 'remote',   'label' => 'Remote'],
-            'hybrid'      => ['class' => 'hybrid',   'label' => 'Hybrid'],
-            'contract'    => ['class' => 'contract', 'label' => 'Contract'],
-            'partnership' => ['class' => 'partner',  'label' => 'Partnership'],
-        ];
+        $tipeMap = config('tipe_map');
 
         foreach ($jobs as $job) {
             $map = $tipeMap[$job->tipe] ?? ['class' => '', 'label' => ucfirst($job->tipe)];
@@ -134,7 +119,6 @@ class RecruiterController extends Controller
 
     public function storeJob(Request $request)
     {
-        $this->guard();
         $uid = $this->userId();
 
         $request->validate([
@@ -170,10 +154,9 @@ class RecruiterController extends Controller
 
     public function updateJob(Request $request, $id)
     {
-        $this->guard();
         $uid = $this->userId();
 
-        // Ensure job belongs to this recruiter
+        // pastiin job ini punyanya recruiter yang lagi login
         $job = DB::selectOne("SELECT id FROM jobs WHERE id = ? AND recruiter_id = ?", [$id, $uid]);
         if (!$job) abort(403, 'Lowongan tidak ditemukan.');
 
@@ -204,24 +187,23 @@ class RecruiterController extends Controller
 
     public function deleteJob($id)
     {
-        $this->guard();
         $uid = $this->userId();
-        DB::delete("DELETE FROM jobs WHERE id = ? AND recruiter_id = ?", [$id, $uid]);
+        // hapus lamaran dulu sebelum hapus jobnya biar ga error foreign key
+        DB::delete('DELETE FROM lamaran WHERE job_id = ? AND job_id IN (SELECT id FROM jobs WHERE recruiter_id = ?)', [$id, $uid]);
+        DB::delete('DELETE FROM jobs WHERE id = ? AND recruiter_id = ?', [$id, $uid]);
         return redirect()->back()->with('success', 'Lowongan berhasil dihapus.');
     }
 
     public function getJobData($id)
     {
-        $this->guard();
         $uid = $this->userId();
         $job = DB::selectOne("SELECT * FROM jobs WHERE id = ? AND recruiter_id = ?", [$id, $uid]);
         return response()->json($job);
     }
 
-    // ─── Lamaran (Applicants) ───────────────────────────────────────
+    // === bagian lamaran (pelamar) ===
     public function lamaran(Request $request)
     {
-        $this->guard();
         $uid = $this->userId();
 
         $status = $request->get('status', '');
@@ -258,7 +240,7 @@ class RecruiterController extends Controller
 
         $applicants = DB::select("
             SELECT l.id, l.status, l.catatan, l.created_at, l.updated_at,
-                   u.nama, u.email, u.telepon, u.foto_profil,
+                   u.nama, u.email, u.telepon, u.foto_profil, u.cv,
                    j.nama_posisi, j.id AS job_id
             FROM lamaran l
             JOIN jobs j ON l.job_id = j.id
@@ -268,7 +250,7 @@ class RecruiterController extends Controller
             LIMIT {$perPage} OFFSET {$offset}
         ", $params);
 
-        // Get status counts for filter buttons
+        // hitung jumlah per status buat tombol filter
         $statusCounts = DB::select("
             SELECT l.status, COUNT(*) AS c FROM lamaran l
             JOIN jobs j ON l.job_id = j.id
@@ -285,12 +267,11 @@ class RecruiterController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        $this->guard();
         $uid = $this->userId();
 
         $request->validate(['status' => 'required|in:pending,review,interview,diterima,ditolak']);
 
-        // Verify the lamaran belongs to this recruiter's job
+        // pastiin lamaran ini memang milik job recruiter yang lagi login
         $exists = DB::selectOne("
             SELECT l.id FROM lamaran l
             JOIN jobs j ON l.job_id = j.id
@@ -306,16 +287,15 @@ class RecruiterController extends Controller
         return redirect()->back()->with('success', 'Status lamaran berhasil diperbarui.');
     }
 
-    // ─── Profil Perusahaan ──────────────────────────────────────────
+    // === bagian profil perusahaan ===
     public function profil()
     {
-        $this->guard();
         $uid = $this->userId();
 
         $perusahaan = DB::selectOne("SELECT * FROM perusahaan WHERE recruiter_id = ?", [$uid]);
         $user = DB::selectOne("SELECT nama, username, email, telepon FROM users WHERE id = ?", [$uid]);
 
-        // Company rating
+        // ambil rating perusahaan
         $companyRating = null;
         if ($perusahaan) {
             $companyRating = DB::selectOne("
@@ -329,7 +309,6 @@ class RecruiterController extends Controller
 
     public function updateProfil(Request $request)
     {
-        $this->guard();
         $uid = $this->userId();
 
         $request->validate([

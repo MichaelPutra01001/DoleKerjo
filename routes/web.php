@@ -10,54 +10,80 @@ use App\Http\Controllers\PerusahaanController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\RecruiterController;
 
+// ─── Welcome: redirect to login ──────────────────────────────────────
 Route::get('/', function () {
-    return view('welcome');
+    if (session('user_id')) {
+        return match (session('role')) {
+            'admin'     => redirect('/admin/dashboard'),
+            'recruiter' => redirect('/recruiter/dashboard'),
+            default     => redirect('/home'),
+        };
+    }
+    return redirect()->route('login');
 });
 
+// ─── Auth (public, rate-limited) ─────────────────────────────────────
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::get('/register/recruiter', [AuthController::class, 'showRegisterRecruiter'])->name('register.recruiter');
+    Route::post('/register/recruiter', [AuthController::class, 'registerRecruiter']);
+});
 
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::get('/register/recruiter', [AuthController::class, 'showRegisterRecruiter'])->name('register.recruiter');
-Route::post('/register/recruiter', [AuthController::class, 'registerRecruiter']);
-Route::get('/home', [HomeController::class, 'index'])->name('home');
-Route::get('/profil', [ProfilController::class, 'index'])->name('profil');
-Route::get('/profil/data', [ProfilController::class, 'getData']);
-Route::post('/profil/update-info', [ProfilController::class, 'updateInfo']);
-Route::post('/profil/update-password', [ProfilController::class, 'updatePassword']);
-Route::post('/profil/hapus', [ProfilController::class, 'hapusAkun']);
-Route::post('/profil/upload-cv', [ProfilController::class, 'uploadCV'])->name('profil.uploadCV');
-Route::delete('/profil/delete-cv', [ProfilController::class, 'deleteCV'])->name('profil.deleteCV');
-Route::post('/profil/upload-photo', [ProfilController::class, 'uploadPhoto'])->name('profil.uploadPhoto');
-Route::post('/profil/upload-portfolio', [ProfilController::class, 'uploadPortfolio'])->name('profil.uploadPortfolio');
-Route::get('/profil/skills-list', [ProfilController::class, 'skillsList']);
-Route::post('/profil/add-skill', [ProfilController::class, 'addSkill'])->name('profil.addSkill');
-Route::delete('/profil/remove-skill/{skillId}', [ProfilController::class, 'removeSkill'])->name('profil.removeSkill');
-Route::post('/profil/verify-email', [ProfilController::class, 'verifyEmail'])->name('profil.verifyEmail');
-Route::get('/jobs', [JobController::class, 'index'])->name('jobs');
-Route::get('/jobs/{id}', [JobController::class, 'show'])->name('jobs.show');
-Route::get('/jobs/{id}/data', [JobController::class, 'data']);
-Route::get('/matching', [MatchingController::class, 'index'])->name('matching');
-Route::post('/hasil', [MatchingController::class, 'hasil'])->name('hasil');
 
-// Perusahaan
-Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan');
-Route::get('/perusahaan/{id}', [PerusahaanController::class, 'show'])->name('perusahaan.show');
-Route::get('/perusahaan/{id}/overview', [PerusahaanController::class, 'getOverview']);
-Route::get('/perusahaan/{id}/reviews', [PerusahaanController::class, 'getReviews']);
-Route::get('/perusahaan/{id}/lamaran', [PerusahaanController::class, 'getLamaran']);
-Route::get('/perusahaan/{id}/connections', [PerusahaanController::class, 'getConnections']);
-Route::post('/perusahaan/apply', [PerusahaanController::class, 'applyJob'])->name('perusahaan.apply');
-Route::post('/perusahaan/review', [PerusahaanController::class, 'storeReview'])->name('perusahaan.review');
+// ─── Forgot Password (public, rate-limited) ──────────────────────────
+Route::middleware('throttle:10,1')->group(function () {
+    Route::post('/forgot-password/check-email', [AuthController::class, 'checkEmail']);
+    Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword']);
+});
 
-// Forgot Password
-Route::post('/forgot-password/check-email', [AuthController::class, 'checkEmail']);
-Route::post('/forgot-password/reset', [AuthController::class, 'resetPassword']);
+// ─── Authenticated Routes (all logged-in users) ─────────────────────
+Route::middleware('auth.check')->group(function () {
+
+    // Home
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+    // Profil
+    Route::get('/profil', [ProfilController::class, 'index'])->name('profil');
+    Route::get('/profil/data', [ProfilController::class, 'getData']);
+    Route::post('/profil/update-info', [ProfilController::class, 'updateInfo']);
+    Route::post('/profil/update-password', [ProfilController::class, 'updatePassword']);
+    Route::post('/profil/hapus', [ProfilController::class, 'hapusAkun']);
+    Route::post('/profil/upload-cv', [ProfilController::class, 'uploadCV'])->name('profil.uploadCV');
+    Route::delete('/profil/delete-cv', [ProfilController::class, 'deleteCV'])->name('profil.deleteCV');
+    Route::post('/profil/upload-photo', [ProfilController::class, 'uploadPhoto'])->name('profil.uploadPhoto');
+    Route::post('/profil/upload-portfolio', [ProfilController::class, 'uploadPortfolio'])->name('profil.uploadPortfolio');
+    Route::get('/profil/skills-list', [ProfilController::class, 'skillsList']);
+    Route::post('/profil/add-skill', [ProfilController::class, 'addSkill'])->name('profil.addSkill');
+    Route::delete('/profil/remove-skill/{skillId}', [ProfilController::class, 'removeSkill'])->name('profil.removeSkill');
+    Route::post('/profil/verify-email', [ProfilController::class, 'verifyEmail'])->name('profil.verifyEmail');
+
+    // Jobs
+    Route::get('/jobs', [JobController::class, 'index'])->name('jobs');
+    Route::get('/jobs/{id}', [JobController::class, 'show'])->name('jobs.show');
+    Route::get('/jobs/{id}/data', [JobController::class, 'data']);
+
+    // Matching
+    Route::get('/matching', [MatchingController::class, 'index'])->name('matching');
+    Route::post('/hasil', [MatchingController::class, 'hasil'])->name('hasil');
+    Route::post('/ai-match', [MatchingController::class, 'aiMatch'])->name('ai.match');
+
+    // Perusahaan
+    Route::get('/perusahaan', [PerusahaanController::class, 'index'])->name('perusahaan');
+    Route::get('/perusahaan/{id}', [PerusahaanController::class, 'show'])->name('perusahaan.show');
+    Route::get('/perusahaan/{id}/overview', [PerusahaanController::class, 'getOverview']);
+    Route::get('/perusahaan/{id}/reviews', [PerusahaanController::class, 'getReviews']);
+    Route::get('/perusahaan/{id}/lamaran', [PerusahaanController::class, 'getLamaran']);
+    Route::get('/perusahaan/{id}/connections', [PerusahaanController::class, 'getConnections']);
+    Route::post('/perusahaan/apply', [PerusahaanController::class, 'applyJob'])->name('perusahaan.apply');
+    Route::post('/perusahaan/review', [PerusahaanController::class, 'storeReview'])->name('perusahaan.review');
+});
 
 // ─── Admin Routes ───────────────────────────────────────────────────
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware('admin.only')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::get('/jobs',      [AdminController::class, 'jobs'])->name('admin.jobs');
     Route::delete('/jobs/{id}', [AdminController::class, 'deleteJob'])->name('admin.jobs.delete');
@@ -74,7 +100,7 @@ Route::prefix('admin')->group(function () {
 });
 
 // ─── Recruiter Routes ──────────────────────────────────────────────
-Route::prefix('recruiter')->group(function () {
+Route::prefix('recruiter')->middleware('recruiter.only')->group(function () {
     Route::get('/dashboard', [RecruiterController::class, 'dashboard'])->name('recruiter.dashboard');
     Route::get('/jobs',      [RecruiterController::class, 'jobs'])->name('recruiter.jobs');
     Route::post('/jobs',     [RecruiterController::class, 'storeJob'])->name('recruiter.jobs.store');

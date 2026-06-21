@@ -1,5 +1,5 @@
 /* =============================================
-   RECRUITER — GradMatch Recruiter Portal
+   RECRUITER — DoleKerjo Recruiter Portal
    Color palette: Indigo accent
    ============================================= */
 
@@ -223,6 +223,16 @@ body {
 .badge.interview { background: #FEF3C7; color: #92400E; }
 .badge.diterima  { background: var(--green-bg); color: var(--green); }
 .badge.ditolak   { background: var(--red-bg); color: var(--red); }
+
+/* ── CV Download Button ── */
+.btn-cv-dl {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 5px;
+  font-size: 12px; font-weight: 600;
+  color: var(--primary); background: var(--primary-light);
+  text-decoration: none; transition: background .15s, color .15s;
+}
+.btn-cv-dl:hover { background: var(--primary); color: #fff; }
 
 /* ── Data Table ── */
 .data-table {

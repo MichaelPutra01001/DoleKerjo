@@ -38,6 +38,18 @@ class AuthController extends Controller
             return back()->withErrors(['login' => 'Akun rekruter Anda sedang menunggu verifikasi oleh Admin.']);
         }
 
+        // ngecheck login mode: portal user biasa atau portal eksekutif
+        $mode = $request->input('login_mode', 'user');
+        if ($mode === 'executive') {
+            if (!in_array($user->role, ['admin', 'recruiter'])) {
+                return back()->withErrors(['login' => 'Akun ini tidak memiliki akses ke portal eksekutif.']);
+            }
+        } else {
+            if ($user->role !== 'user') {
+                return back()->withErrors(['login' => 'Akun eksekutif harus masuk melalui portal Eksekutif.']);
+            }
+        }
+
         session([
             'user_id'  => $user->id,
             'nama'     => $user->nama,
@@ -69,7 +81,7 @@ public function register(Request $request)
     $pendidikan = $request->input('pendidikan', '');
     $jurusan   = trim($request->input('jurusan', ''));
 
-    // Validate pendidikan against valid ENUM values; set null if empty/invalid
+    // validasi pendidikan, kalau ga valid ya di-set null aja
     $validPendidikan = ['sma', 'd3', 's1', 's2', 's3'];
     if (!in_array($pendidikan, $validPendidikan)) {
         $pendidikan = null;
@@ -93,9 +105,10 @@ public function register(Request $request)
         return back()->withErrors(['Email atau username sudah terdaftar.'])->withInput();
     }
 
+    // pakai transaction biar aman kalau ada yang gagal
     DB::insert('
-        INSERT INTO users (nama, username, email, password, telepon, lokasi, pendidikan, jurusan)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO users (nama, username, email, password, telepon, lokasi, pendidikan, jurusan, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
     ', [$nama, $username, $email, Hash::make($password), $telepon, $lokasi, $pendidikan, $jurusan]);
 
     $user = DB::selectOne('SELECT * FROM users WHERE email = ?', [$email]);
@@ -112,12 +125,12 @@ public function register(Request $request)
 
     public function checkEmail(Request $request)
     {
-        $email = trim($request->input('email', ''));
-        $user = User::where('email', $email)->first();
-        if (!$user) {
-            return response()->json(['status' => 'error', 'message' => 'Email tidak terdaftar.']);
-        }
-        return response()->json(['status' => 'success', 'message' => 'Email ditemukan.']);
+        // balas generic biar orang ga bisa nebak email mana yang terdaftar
+        // reset password benerannya diurus sama resetPassword()
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Jika email terdaftar, instruksi reset password akan diproses.',
+        ]);
     }
 
     public function resetPassword(Request $request)
@@ -157,7 +170,7 @@ public function register(Request $request)
         $telepon = trim($request->input('telepon', ''));
         $password = $request->input('password', '');
         $confirm = $request->input('confirm_password', '');
-        
+
         $nama_perusahaan = trim($request->input('nama_perusahaan', ''));
         $tipe_bisnis = trim($request->input('tipe_bisnis', ''));
         $lokasi = trim($request->input('lokasi', ''));
@@ -183,20 +196,23 @@ public function register(Request $request)
             return back()->withErrors(['Email atau username sudah terdaftar.'])->withInput();
         }
 
-        // Insert Recruiter
-        DB::insert('
-            INSERT INTO users (nama, username, email, password, telepon, role, is_verified)
-            VALUES (?, ?, ?, ?, ?, \'recruiter\', 0)
-        ', [$nama, $username, $email, Hash::make($password), $telepon]);
+        // bungkus dalam transaction biar kalau gagal di tengah ga setengah-setengah
+        DB::transaction(function () use ($nama, $username, $email, $password, $telepon, $nama_perusahaan, $tipe_bisnis, $lokasi, $website, $ditemukan_tahun, $deskripsi) {
+            // masukin data recruiter dulu
+            DB::insert('
+                INSERT INTO users (nama, username, email, password, telepon, role, is_verified, created_at)
+                VALUES (?, ?, ?, ?, ?, \'recruiter\', 0, NOW())
+            ', [$nama, $username, $email, Hash::make($password), $telepon]);
 
-        // Get the inserted user ID
-        $user = DB::selectOne('SELECT id FROM users WHERE email = ?', [$email]);
+            // ambil id user yang baru aja dimasukin
+            $user = DB::selectOne('SELECT id FROM users WHERE email = ?', [$email]);
 
-        // Insert Perusahaan
-        DB::insert('
-            INSERT INTO perusahaan (recruiter_id, nama, lokasi, website, tipe_bisnis, ditemukan_tahun, deskripsi)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ', [$user->id, $nama_perusahaan, $lokasi, $website, $tipe_bisnis, $ditemukan_tahun ? intval($ditemukan_tahun) : null, $deskripsi]);
+            // masukin data perusahaan
+            DB::insert('
+                INSERT INTO perusahaan (recruiter_id, nama, lokasi, website, tipe_bisnis, ditemukan_tahun, deskripsi, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+            ', [$user->id, $nama_perusahaan, $lokasi, $website, $tipe_bisnis, $ditemukan_tahun ? intval($ditemukan_tahun) : null, $deskripsi]);
+        });
 
         return view('auth.regis_recruiter_success');
     }

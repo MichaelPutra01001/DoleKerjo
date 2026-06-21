@@ -8,25 +8,17 @@ use Illuminate\Support\Facades\Hash;
 
 class ProfilController extends Controller
 {
-    // Cek login helper
-    private function cekLogin()
-    {
-        if (!session('user_id')) {
-            abort(401);
-        }
-    }
+    // autentikasi diurus sama middleware auth.check
 
-    // Tampilkan halaman profil
+    // tampilin halaman profil
     public function index()
     {
-        $this->cekLogin();
         return view('profil');
     }
 
-    // Ambil data profil (JSON) — ganti Profil.php
+    // ambil data profil dalam format JSON
     public function getData()
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         $user = DB::selectOne('
@@ -40,7 +32,7 @@ class ProfilController extends Controller
             return response()->json(['status' => 'error', 'message' => 'User tidak ditemukan.'], 404);
         }
 
-        // ── Profile completion ──
+        // hitung kelengkapan profil
         $skills = DB::select('
             SELECT us.skill_id, s.nama, s.kategori, us.level
             FROM user_skills us
@@ -50,8 +42,15 @@ class ProfilController extends Controller
 
         $steps = $this->calcCompletion($user, $skills);
 
+        // bersihin lamaran yang jobnya udah dihapus (biar ga error)
+        DB::delete('
+            DELETE l FROM lamaran l
+            LEFT JOIN jobs j ON j.id = l.job_id
+            WHERE l.user_id = ? AND j.id IS NULL
+        ', [$user_id]);
+
         $lamaran = DB::select('
-            SELECT l.status, l.created_at, j.nama_posisi, j.nama_perusahaan
+            SELECT l.status, l.catatan, l.created_at, l.updated_at, j.nama_posisi, j.nama_perusahaan, j.id AS job_id
             FROM lamaran l
             JOIN jobs j ON j.id = l.job_id
             WHERE l.user_id = ?
@@ -68,10 +67,9 @@ class ProfilController extends Controller
         ]);
     }
 
-    // Update info pribadi
+    // update info pribadi user
     public function updateInfo(Request $request)
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         $nama    = trim($request->input('nama', ''));
@@ -102,10 +100,9 @@ class ProfilController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Profil berhasil diperbarui.']);
     }
 
-    // Update password
+    // ganti password user
     public function updatePassword(Request $request)
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         $old_pass     = $request->input('old_password', '');
@@ -135,22 +132,48 @@ class ProfilController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Password berhasil diubah.']);
     }
 
-    // Hapus akun
+    // hapus akun beserta semua data yang nyambung ke akun ini
     public function hapusAkun()
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
-        DB::delete('DELETE FROM users WHERE id = ?', [$user_id]);
-        session()->flush();
+        DB::transaction(function () use ($user_id) {
+            // kalau recruiter, hapus juga data perusahaan dan job-jobnya
+            $user = DB::selectOne('SELECT role FROM users WHERE id = ?', [$user_id]);
+            if ($user && $user->role === 'recruiter') {
+                $perusahaan = DB::selectOne('SELECT id, nama FROM perusahaan WHERE recruiter_id = ?', [$user_id]);
+                if ($perusahaan) {
+                    DB::delete('DELETE l FROM lamaran l JOIN jobs j ON l.job_id = j.id WHERE j.recruiter_id = ?', [$user_id]);
+                    DB::delete('DELETE FROM jobs WHERE recruiter_id = ?', [$user_id]);
+                    DB::delete('DELETE FROM reviews WHERE nama_perusahaan = ?', [$perusahaan->nama]);
+                    DB::delete('DELETE FROM perusahaan WHERE recruiter_id = ?', [$user_id]);
+                }
+            } else {
+                DB::delete('DELETE FROM lamaran WHERE user_id = ?', [$user_id]);
+                DB::delete('DELETE FROM user_skills WHERE user_id = ?', [$user_id]);
+                DB::delete('DELETE FROM reviews WHERE user_id = ?', [$user_id]);
+            }
 
+            // hapus file yang pernah diupload
+            $userData = DB::selectOne('SELECT cv, foto_profil, portfolio FROM users WHERE id = ?', [$user_id]);
+            if ($userData) {
+                foreach ([$userData->cv, $userData->foto_profil, $userData->portfolio] as $file) {
+                    if ($file && file_exists(public_path($file))) {
+                        @unlink(public_path($file));
+                    }
+                }
+            }
+
+            DB::delete('DELETE FROM users WHERE id = ?', [$user_id]);
+        });
+
+        session()->flush();
         return response()->json(['status' => 'success', 'message' => 'Akun berhasil dihapus.']);
     }
 
-    // ── Upload CV (DOCX/PDF) ──
+    // upload CV (PDF/DOCX)
     public function uploadCV(Request $request)
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         if (!$request->hasFile('cv')) {
@@ -172,22 +195,41 @@ class ProfilController extends Controller
         if (!is_dir($dest)) mkdir($dest, 0755, true);
         $file->move($dest, $filename);
 
-        // Delete old file
+        // hapus CV lama kalau ada
         $old = DB::selectOne('SELECT cv FROM users WHERE id = ?', [$user_id]);
         if ($old && $old->cv && file_exists(public_path($old->cv))) {
             @unlink(public_path($old->cv));
         }
 
         $path = 'uploads/cv/' . $filename;
-        DB::update('UPDATE users SET cv = ?, updated_at = NOW() WHERE id = ?', [$path, $user_id]);
 
-        return response()->json(['status' => 'success', 'message' => 'CV berhasil diunggah!', 'path' => $path]);
+        // coba parse CV ke markdown pakai markitdown
+        $cvParsed = null;
+        try {
+            $fullPath = $dest . '/' . $filename;
+            $cmd = 'python -m markitdown ' . escapeshellarg($fullPath) . ' 2>&1';
+            $output = shell_exec($cmd);
+            if ($output && strlen(trim($output)) > 10) {
+                $cvParsed = trim($output);
+            }
+        } catch (\Throwable $e) {
+            // ga masalah kalau parse gagal, CV tetap tersimpan
+            $cvParsed = null;
+        }
+
+        DB::update('UPDATE users SET cv = ?, cv_parsed = ?, updated_at = NOW() WHERE id = ?', [$path, $cvParsed, $user_id]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'CV berhasil diunggah!' . ($cvParsed ? ' (AI berhasil membaca CV)' : ''),
+            'path'    => $path,
+            'parsed'  => $cvParsed !== null,
+        ]);
     }
 
-    // ── Delete CV ──
+    // hapus CV
     public function deleteCV()
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         $old = DB::selectOne('SELECT cv FROM users WHERE id = ?', [$user_id]);
@@ -195,15 +237,14 @@ class ProfilController extends Controller
             @unlink(public_path($old->cv));
         }
 
-        DB::update('UPDATE users SET cv = NULL, updated_at = NOW() WHERE id = ?', [$user_id]);
+        DB::update('UPDATE users SET cv = NULL, cv_parsed = NULL, updated_at = NOW() WHERE id = ?', [$user_id]);
 
         return response()->json(['status' => 'success', 'message' => 'CV berhasil dihapus.']);
     }
 
-    // ── Upload foto profil ──
+    // upload foto profil
     public function uploadPhoto(Request $request)
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         if (!$request->hasFile('foto')) {
@@ -225,7 +266,7 @@ class ProfilController extends Controller
         if (!is_dir($dest)) mkdir($dest, 0755, true);
         $file->move($dest, $filename);
 
-        // Delete old file
+        // hapus foto lama kalau ada
         $old = DB::selectOne('SELECT foto_profil FROM users WHERE id = ?', [$user_id]);
         if ($old && $old->foto_profil && file_exists(public_path($old->foto_profil))) {
             @unlink(public_path($old->foto_profil));
@@ -237,10 +278,9 @@ class ProfilController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Foto profil berhasil diunggah!', 'path' => $path]);
     }
 
-    // ── Upload portfolio ──
+    // upload portfolio
     public function uploadPortfolio(Request $request)
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         if (!$request->hasFile('portfolio')) {
@@ -262,7 +302,7 @@ class ProfilController extends Controller
         if (!is_dir($dest)) mkdir($dest, 0755, true);
         $file->move($dest, $filename);
 
-        // Delete old file
+        // hapus portfolio lama kalau ada
         $old = DB::selectOne('SELECT portfolio FROM users WHERE id = ?', [$user_id]);
         if ($old && $old->portfolio && file_exists(public_path($old->portfolio))) {
             @unlink(public_path($old->portfolio));
@@ -274,10 +314,9 @@ class ProfilController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Portfolio berhasil diunggah!', 'path' => $path]);
     }
 
-    // ── Get available skills list (for dropdown) ──
+    // ambil daftar skill yang belum dimiliki user (buat dropdown)
     public function skillsList()
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         $skills = DB::select('
@@ -290,10 +329,9 @@ class ProfilController extends Controller
         return response()->json(['status' => 'success', 'skills' => $skills]);
     }
 
-    // ── Add skill to user ──
+    // tambah skill ke profil user
     public function addSkill(Request $request)
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         $skill_id = $request->input('skill_id');
@@ -303,7 +341,7 @@ class ProfilController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Pilih skill terlebih dahulu.']);
         }
 
-        // Check if already added
+        // cek apakah skill ini udah ditambah sebelumnya
         $exists = DB::selectOne('SELECT id FROM user_skills WHERE user_id = ? AND skill_id = ?', [$user_id, $skill_id]);
         if ($exists) {
             return response()->json(['status' => 'error', 'message' => 'Skill sudah ditambahkan.']);
@@ -318,10 +356,9 @@ class ProfilController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Skill berhasil ditambahkan.']);
     }
 
-    // ── Remove skill from user ──
+    // hapus skill dari profil user
     public function removeSkill($skillId)
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
         DB::delete('DELETE FROM user_skills WHERE user_id = ? AND skill_id = ?', [$user_id, $skillId]);
@@ -329,13 +366,12 @@ class ProfilController extends Controller
         return response()->json(['status' => 'success', 'message' => 'Skill berhasil dihapus.']);
     }
 
-    // ── Request email verification (sent to admin for approval) ──
+    // minta verifikasi email (dikirim ke admin buat disetujui)
     public function verifyEmail()
     {
-        $this->cekLogin();
         $user_id = session('user_id');
 
-        // Check current state
+        // cek status verifikasi sekarang
         $user = DB::selectOne('SELECT email_verified FROM users WHERE id = ?', [$user_id]);
         if ($user && $user->email_verified == 1) {
             return response()->json(['status' => 'error', 'message' => 'Email sudah diverifikasi.']);
@@ -344,13 +380,13 @@ class ProfilController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Permintaan verifikasi sudah dikirim. Menunggu persetujuan admin.']);
         }
 
-        // Set to pending (2 = waiting admin approval)
+        // set ke pending (2 = nunggu admin approve)
         DB::update('UPDATE users SET email_verified = 2, updated_at = NOW() WHERE id = ?', [$user_id]);
 
         return response()->json(['status' => 'success', 'message' => 'Permintaan verifikasi email berhasil dikirim. Menunggu persetujuan admin.']);
     }
 
-    // ── Calculate profile completion steps ──
+    // hitung persentase kelengkapan profil
     private function calcCompletion($user, $skills)
     {
         $steps = [
